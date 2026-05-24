@@ -128,6 +128,62 @@ douzeland/
   pour ça, ne pas le contourner)
 - ❌ Ajouter des boutons sociaux, likes, partages — pas un réseau social
 
+## Décisions techniques
+
+Décisions prises et figées (à respecter par toute personne ou IA
+intervenant sur le projet).
+
+### Stockage des photos
+
+On utilise les **Content Collections d'Astro v6** :
+
+- Métadonnées : `src/content/photos/<slug>.md`
+- Images : `src/assets/photos/<slug>.jpg`
+- Le `.md` pointe vers son image via le champ `image` du frontmatter
+- Chaque photo DOIT avoir son `.md` (pas d'image orpheline)
+
+Bénéfice : Astro optimise automatiquement les images (WebP, lazy load,
+multiples tailles) au build. Aucune lib externe nécessaire.
+
+### Frontmatter du .md
+
+Structure obligatoire (champs marqués OPT sont optionnels) :
+
+```yaml
+---
+title: "Légende courte"                          # OPT
+date: 2026-05-24                                  # OBLIGATOIRE
+featured: false                                   # OBLIGATOIRE (true/false)
+image: "../../assets/photos/2026-05-slug.jpg"     # OBLIGATOIRE
+alt: "Description pour accessibilité et SEO"      # OBLIGATOIRE
+---
+
+Texte libre optionnel pour accompagner la photo.
+```
+
+### Tri et affichage
+
+- Tri par défaut : `date` décroissante (récent en haut)
+- Le hero affiche les photos `featured: true`
+- Fallback : si 0 photo featured, le hero affiche la photo la plus récente
+  (jamais de hero vide)
+
+### Slider du hero
+
+- Slider **manuel** uniquement (flèches gauche/droite + swipe mobile)
+- Pas d'auto-play (trop marketing-ish pour le style éditorial)
+- **JS vanilla pur** (~30 lignes) — pas de lib externe type Swiper.js
+- Si une seule photo featured (ou fallback) → pas de flèches, juste l'image
+
+### Ordre de codage MVP (priorité)
+
+1. **`/photo/[slug]`** en premier — définit le modèle de données
+2. **`/`** ensuite — réutilise le modèle, ajoute hero + liste
+3. **`/a-propos`** en dernier — page quasi statique, simple
+
+Justification : on part de la donnée (la photo individuelle) vers
+l'agrégation (la home).
+
 ## Contexte personnel
 
 Je m'appelle Douze, je suis entrepreneur et
