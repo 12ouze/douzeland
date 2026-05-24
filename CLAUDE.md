@@ -71,22 +71,36 @@ Footer :  discret — mention copyright + lien contact
 - `/archives` — Toutes les photos, vue grille dense
 
 ## Workflow de publication des photos
-Une photo = un fichier image dans `src/photos/` + un fichier `.md`
-optionnel à côté avec front-matter :
 
-```yaml
----
-title: Optionnel, légende courte
-date: 2026-05-24
-featured: true   # si true → apparaît dans le hero slider
----
+On passe par les **Content Collections d'Astro** : chaque photo =
+une image **+** son fichier `.md` (le `.md` est **obligatoire**,
+pas d'image orpheline). Voir la section « Décisions techniques →
+Stockage des photos » pour le détail et la justification.
 
-Texte libre optionnel pour accompagner la photo.
-```
+Étapes pour ajouter une photo :
 
-Ajouter une photo = exporter depuis Lightroom dans `src/photos/`,
-optionnellement créer le `.md`, commit + push. Netlify déploie tout
-seul.
+1. **Exporter l'image** depuis Lightroom dans `src/assets/photos/`,
+   ex. `2026-05-le-pont.jpg`.
+2. **Créer le `.md`** dans `src/content/photos/` (même nom de base
+   → le slug vient du nom du fichier), avec le front-matter complet :
+
+   ```yaml
+   ---
+   title: "Le pont au petit matin"                    # OPT
+   date: 2026-05-24                                    # OBLIGATOIRE
+   featured: true                                      # OBLIGATOIRE → hero slider
+   image: "../../assets/photos/2026-05-le-pont.jpg"    # OBLIGATOIRE (chemin relatif au .md)
+   alt: "Pont de pierre dans la brume"                # OBLIGATOIRE
+   ---
+
+   Texte libre optionnel pour accompagner la photo.
+   ```
+
+3. **`npm run build`** en local pour valider le front-matter (le
+   schéma de `src/content.config.ts` lève une erreur claire si un
+   champ obligatoire manque ou si le chemin `image` est faux).
+4. **commit + push** → Netlify déploie tout seul, en optimisant
+   les images au passage (WebP, lazy load, multiples tailles).
 
 ## Conventions de code
 
