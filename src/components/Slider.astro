@@ -61,7 +61,11 @@ const multiple = photos.length > 1;
     let courant = 0;
 
     if (slides.length > 1) {
-      // Point actif suivi au scroll (vaut pour les flèches ET le swipe).
+      const dernier = slides.length - 1;
+      const section = piste.closest('.slider');
+
+      // Point actif suivi au scroll (vaut pour flèches, clavier et swipe ;
+      // continue de fonctionner naturellement après une téléportation loop).
       const io = new IntersectionObserver(
         (entries) => {
           entries.forEach((e) => {
@@ -75,12 +79,41 @@ const multiple = photos.length > 1;
       );
       slides.forEach((s) => io.observe(s));
 
-      const aller = (i: number) => {
-        const cible = Math.max(0, Math.min(slides.length - 1, i));
-        slides[cible].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
-      };
-      document.querySelector('.fleche-prec')?.addEventListener('click', () => aller(courant - 1));
-      document.querySelector('.fleche-suiv')?.addEventListener('click', () => aller(courant + 1));
+      // Chaque slide fait 100% de la largeur de la piste.
+      const goTo = (i: number, behavior: ScrollBehavior) =>
+        piste.scrollTo({ left: i * piste.clientWidth, behavior });
+      // Loop infini : au-delà des bornes, téléportation instantanée ('auto')
+      // à l'autre bout (évite un scroll inverse visible) ; sinon 'smooth'.
+      const suivant = () =>
+        courant >= dernier ? goTo(0, 'auto') : goTo(courant + 1, 'smooth');
+      const precedent = () =>
+        courant <= 0 ? goTo(dernier, 'auto') : goTo(courant - 1, 'smooth');
+
+      document.querySelector('.fleche-suiv')?.addEventListener('click', suivant);
+      document.querySelector('.fleche-prec')?.addEventListener('click', precedent);
+
+      // Clavier ← → : actif seulement quand le slider est ≥50% visible ;
+      // sinon on n'intercepte rien (le navigateur gère normalement).
+      let sliderVisible = true;
+      if (section) {
+        const vis = new IntersectionObserver(
+          (entries) => {
+            sliderVisible = entries[0].isIntersecting;
+          },
+          { threshold: 0.5 },
+        );
+        vis.observe(section);
+      }
+      document.addEventListener('keydown', (e) => {
+        if (!sliderVisible) return;
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          suivant();
+        } else if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          precedent();
+        }
+      });
     }
 
     // Chevron : fade out une fois que l'utilisateur a scrollé > 50px.
