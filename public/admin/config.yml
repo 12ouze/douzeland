@@ -1,0 +1,45 @@
+# Configuration Decap CMS — interface d'admin de douzeland.
+# Auth : GitHub OAuth auto-hébergé (Netlify Functions) — branché en Phase 2.
+# local_backend permet d'éditer en LOCAL sans OAuth via `npx decap-server`.
+
+local_backend: true
+
+backend:
+  name: github
+  repo: 12ouze/douzeland
+  branch: main
+  # base_url + auth_endpoint (fonctions OAuth) seront ajoutés en Phase 2.
+
+site_url: https://douzeland.netlify.app
+locale: fr
+
+# Images commitées dans src/assets/photos (optimisées par Astro au build) ;
+# le chemin écrit dans le .md reste au format relatif actuel (../../assets/photos/x).
+media_folder: "src/assets/photos"
+public_folder: "../../assets/photos"
+
+collections:
+  - name: "photos"
+    label: "Photos"
+    label_singular: "Photo"
+    description: "Une photo = un .md + son image. Le slug vient du nom de fichier."
+    folder: "src/content/photos"
+    create: true
+    extension: "md"
+    format: "yaml-frontmatter"
+    slug: "{{year}}-{{month}}-{{slug}}"
+    identifier_field: "title"
+    summary: "{{title}}"
+    sortable_fields: ["date", "title"]
+    fields:
+      - { label: "Titre", name: "title", widget: "string", required: false }
+      - label: "Date"
+        name: "date"
+        widget: "datetime"
+        date_format: "YYYY-MM-DD"
+        time_format: false
+        picker_utc: true
+      - { label: "À la une (hero)", name: "featured", widget: "boolean", default: false }
+      - { label: "Image", name: "image", widget: "image" }
+      - { label: "Texte alternatif (alt)", name: "alt", widget: "string" }
+      - { label: "Texte libre (optionnel)", name: "body", widget: "markdown", required: false }
