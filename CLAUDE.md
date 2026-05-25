@@ -189,6 +189,44 @@ Texte libre optionnel pour accompagner la photo.
 - **JS vanilla pur** (~30 lignes) — pas de lib externe type Swiper.js
 - Si une seule photo featured (ou fallback) → pas de flèches, juste l'image
 
+### Affichage des photos (pages individuelles)
+
+- `object-fit: contain` systématiquement — jamais `cover`, jamais de crop.
+- La photo est toujours entièrement visible, ratio préservé.
+- Des bandes crème (la couleur de fond) entourent l'image quand son ratio
+  ≠ celui de l'écran : haut/bas pour un paysage, gauche/droite pour un
+  portrait. Bandes **assumées**, pas un défaut.
+- Conséquence acceptée : un portrait sur écran large affiche de grosses
+  bandes latérales (photo réduite). C'est le compromis « tout visible,
+  sans scroll ».
+- Évolution future possible : layout adaptatif selon l'orientation (cf.
+  Direction artistique → Photos), mais **hors scope actuel**.
+- Implémenté dans `src/pages/photo/[slug].astro`.
+
+### Pattern CSS : viewport sans scroll
+
+Pour qu'une page tienne entièrement dans le viewport sans scroll :
+
+```css
+body {
+  height: 100vh;   /* fallback OBLIGATOIRE (navigateurs avant 2022) */
+  height: 100dvh;  /* hauteur réelle, gère les barres d'URL mobiles */
+  overflow: hidden;
+}
+```
+
+- Le fallback `100vh` est obligatoire : `dvh` n'est pas connu des vieux
+  navigateurs.
+- À réutiliser sur toute page « plein écran sans scroll ».
+
+### Pattern CSS : z-index des éléments fixes
+
+- Un élément `position: fixed` qui doit passer devant le contenu →
+  `z-index: 10`.
+- Convention par paliers de 10 : **10** = navigation / sticky, **100** =
+  modal, **10000** = toast. Monter d'un palier si besoin.
+- Évite les `z-index: 9999` posés au hasard.
+
 ### Ordre de codage MVP (priorité)
 
 1. **`/photo/[slug]`** en premier — définit le modèle de données
@@ -197,6 +235,27 @@ Texte libre optionnel pour accompagner la photo.
 
 Justification : on part de la donnée (la photo individuelle) vers
 l'agrégation (la home).
+
+## Dette technique
+
+Choses connues à corriger, **non bloquantes**, listées pour ne pas les
+redécouvrir.
+
+### Fond crème codé en dur
+
+- La couleur `#f7f5ef` est actuellement en dur dans
+  `src/pages/photo/[slug].astro`.
+- À remonter en **variable CSS globale** dès le premier layout/CSS
+  partagé (probablement à la création de la home `/`).
+- Risque actuel : divergence de teinte si modifiée à un seul endroit.
+
+### Titres des photos à enrichir
+
+- 7 photos sur 8 ont `title: "2025-09-xxx"` (slug recyclé en titre faute
+  de mieux à l'import).
+- Visible dans l'onglet du navigateur **et** les résultats Google.
+- À remplacer par de vrais titres quand on a le temps.
+- Pas bloquant, mais à faire **avant tout travail SEO sérieux**.
 
 ## Contexte personnel
 
