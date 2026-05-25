@@ -257,6 +257,30 @@ redécouvrir.
 - À remplacer par de vrais titres quand on a le temps.
 - Pas bloquant, mais à faire **avant tout travail SEO sérieux**.
 
+## Architecture decisions (à ne pas casser)
+
+Invariants d'infrastructure. Les casser met le site ou l'admin hors service.
+
+### URL de production
+L'URL prod est **douzeland.netlify.app** (pas `candid-meerkat-b33c48…`).
+L'ancien sous-domaine auto-généré par Netlify a été libéré au renommage :
+un bookmark dessus renvoie « Site not found ». Toujours utiliser
+`douzeland.netlify.app`.
+
+### Pas d'adapter Astro
+`astro.config.mjs` est **vide volontairement** (`defineConfig({})` → output
+statique). Les Netlify Functions (`auth`, `callback`) sont gérées en natif
+par Netlify depuis `netlify/functions/`, **pas** via `@astrojs/netlify`.
+**Ne JAMAIS installer `@astrojs/netlify`** : ça basculerait le build en mode
+adapter/SSR et casserait l'OAuth Decap.
+
+### Callback OAuth lié au domaine
+L'OAuth App GitHub a son `client_id` configuré avec le callback
+`https://douzeland.netlify.app/.netlify/functions/callback`. Si on change de
+domaine un jour, mettre à jour **les deux** :
+1. l'*Authorization callback URL* sur github.com/settings/developers,
+2. le `base_url` (donc le `redirect_uri`) côté Decap (`public/admin/config.yml`).
+
 ## Contexte personnel
 
 Je m'appelle Douze, je suis entrepreneur et
