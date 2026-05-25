@@ -1,18 +1,31 @@
 ---
+// Page d'accueil : masthead + galerie verticale des photos.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import PhotoCard from '../components/PhotoCard.astro';
+import { getCollection } from 'astro:content';
 
+// Tri : champ `order` décroissant (plus grand = en haut), départage stable
+// par id. Cohérent avec le tri par défaut de l'admin Decap.
+const photos = (await getCollection('photos'))
+  .sort((a, b) => b.data.order - a.data.order || (a.id < b.id ? -1 : 1));
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>douze land — photographies</title>
-	</head>
-	<body>
-		<h1>DOUZE LAND</h1>
-		 <p>memoire vive</p>
-	</body>
-</html>
+<Layout title="douze land — photographies">
+  <Header />
+  <main class="galerie">
+    {photos.map((photo) => <PhotoCard photo={photo} />)}
+  </main>
+</Layout>
+
+<style>
+  /* Liste verticale : 1 colonne centrée, grandes images, beaucoup d'air. */
+  .galerie {
+    max-width: var(--max-contenu);
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6rem; /* ~96px d'air entre les photos */
+  }
+</style>

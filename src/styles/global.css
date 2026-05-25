@@ -1,0 +1,33 @@
+/* CSS global : reset léger + variables de design.
+   Seul fichier de styles non scopé (cf. CLAUDE.md → Conventions de code).
+   Toute couleur/dimension partagée vit ici, en variable. */
+
+:root {
+  --creme: #f7f5ef;       /* fond blanc cassé (jamais blanc pur) */
+  --noir: #111;           /* texte noir profond (pas gris) */
+  --max-contenu: 1000px;  /* largeur max de la colonne de contenu */
+  --header-h: 64px;       /* hauteur de la bande header */
+  --police: system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--creme);
+  color: var(--noir);
+  font-family: var(--police);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reset image : bloc (pas de gap inline) + responsive par défaut.
+   Les composants imposent leur propre dimensionnement via une classe. */
+img {
+  display: block;
+  max-width: 100%;
+}

@@ -1,0 +1,37 @@
+---
+// Masthead du site : titre DOUZE LAND + tagline « memoire vive ».
+// Le titre est un lien vers la home.
+---
+
+<header class="masthead">
+  <a class="titre" href="/">DOUZE LAND</a>
+  <p class="tagline">memoire vive</p>
+</header>
+
+<style>
+  .masthead {
+    max-width: var(--max-contenu);
+    margin: 0 auto;
+    padding: 5rem 1.5rem 4rem;
+  }
+
+  /* Titre : sans-serif gras, capitales, letter-spacing ample (CLAUDE.md). */
+  .titre {
+    display: inline-block;
+    color: var(--noir);
+    text-decoration: none;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    line-height: 1;
+  }
+
+  .tagline {
+    margin: 0.8rem 0 0;
+    color: var(--noir);
+    opacity: 0.55;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+  }
+</style>

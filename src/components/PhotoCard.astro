@@ -1,0 +1,35 @@
+---
+// Vignette de la liste : photo cliquable vers sa page individuelle.
+// Ratio naturel préservé, aucun crop (le cover est réservé au hero).
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  photo: CollectionEntry<'photos'>;
+}
+
+const { photo } = Astro.props;
+const { image, alt } = photo.data;
+---
+
+<a class="carte" href={`/photo/${photo.id}`}>
+  <Image
+    src={image}
+    alt={alt}
+    widths={[640, 960, 1280, 1600, 2000]}
+    sizes="(max-width: 1040px) 100vw, 1000px"
+    format="webp"
+    loading="lazy"
+  />
+</a>
+
+<style>
+  .carte {
+    display: block;
+  }
+
+  .carte img {
+    width: 100%;
+    height: auto;  /* ratio naturel, jamais rogné */
+  }
+</style>

@@ -6,6 +6,7 @@
 // visible, un seul élément d'interface (lien « retour »).
 import { getCollection } from 'astro:content';
 import { Image } from 'astro:assets';
+import '../../styles/global.css';
 
 // Une page par entrée de la collection. L'id de l'entrée (nom du .md sans
 // extension, ex. « 2025-09-balade ») devient le slug de l'URL.
@@ -44,15 +45,14 @@ const { image, alt, title } = photo.data;
 </html>
 
 <style>
-  /* Fond crème (CLAUDE.md). Codé en dur ici tant qu'il n'y a pas de CSS
-     global ; à remonter en variable quand on créera le layout/la home.
-     C'est ce crème qu'on voit dans les bandes autour de la photo. */
+  /* Fond crème depuis la variable globale (src/styles/global.css). C'est
+     ce crème qu'on voit dans les bandes autour de la photo. */
   body {
     margin: 0;
     height: 100vh;        /* fallback pour les vieux navigateurs */
     height: 100dvh;       /* hauteur réelle du viewport (barres mobiles) */
     overflow: hidden;     /* zéro scroll, ni vertical ni horizontal */
-    background: #f7f5ef;
+    background: var(--creme);
   }
 
   /* La photo occupe tout le viewport puis object-fit: contain l'y inscrit
@@ -78,8 +78,8 @@ const { image, alt, title } = photo.data;
     top: calc(1.5rem + env(safe-area-inset-top, 0px));
     left: calc(1.5rem + env(safe-area-inset-left, 0px));
     padding: 0.6rem 0.9rem;
-    background: #f7f5ef;
-    color: #111;
+    background: var(--creme);
+    color: var(--noir);
     text-decoration: none;
     font: 600 0.85rem/1 system-ui, 'Helvetica Neue', Arial, sans-serif;
     letter-spacing: 0.04em;
