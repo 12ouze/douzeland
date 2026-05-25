@@ -50,6 +50,7 @@ const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
   <!-- Anti-flash : positionne sur la 1re vraie slide avant le 1er paint -->
   <script is:inline>
     (function () {
+      if (window.matchMedia('(max-width: 600px)').matches) return; // mobile : slider masqué
       var p = document.getElementById('slider-piste');
       if (p && p.children.length > 1) p.scrollLeft = p.clientWidth;
     })();
@@ -71,8 +72,12 @@ const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
 </section>
 
 <script>
+  // Mobile (≤600px) : le carrousel est masqué (CSS) → on n'attache AUCUNE
+  // logique JS (autoplay, observers, listeners, clones, scrollTo). Rotation
+  // vers > 600px après chargement : un refresh suffit (pas de listener resize).
+  const isMobile = window.matchMedia('(max-width: 600px)').matches;
   const piste = document.getElementById('slider-piste');
-  if (piste) {
+  if (piste && !isMobile) {
     const n = Number(piste.dataset.count); // nb de VRAIES photos
     const points = Array.from(document.querySelectorAll<HTMLElement>('.point'));
     const total = piste.querySelectorAll('.slide').length; // n + 2 si clones
@@ -280,20 +285,11 @@ const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
   }
   .fleche-prec { left: 0.5rem; }
   .fleche-suiv { right: 0.5rem; }
-  /* Mobile (≤600px) : photo entière en largeur, hauteur = ratio naturel.
-     Piste A (height auto) : avec le <Image> Astro (attributs width/height),
-     le navigateur réserve déjà le bon ratio → aucun crop, zéro CLS, pas de
-     calcul de ratio par slide. */
+  /* Mobile (≤600px) : carrousel entièrement masqué. La home redevient
+     masthead Header + liste verticale (cf. Tâche 3a). La logique JS est
+     aussi court-circuitée (early skip) pour ne rien faire tourner. */
   @media (max-width: 600px) {
-    .fleche { display: none; }
-
-    .slider { height: auto; }
-    .piste {
-      height: auto;
-      align-items: flex-start; /* chaque slide garde sa hauteur naturelle */
-    }
-    .slide { height: auto; }
-    .slide-img { height: auto; } /* plein largeur, ratio naturel, aucun crop */
+    .slider { display: none; }
   }
 
   /* Points : indicateur de position */
