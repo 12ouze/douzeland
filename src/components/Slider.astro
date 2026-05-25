@@ -123,28 +123,74 @@ const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
         { passive: true },
       );
 
-      document.querySelector('.fleche-suiv')?.addEventListener('click', suivant);
-      document.querySelector('.fleche-prec')?.addEventListener('click', precedent);
-
-      // Clavier ← → : actif seulement quand le slider est ≥50% visible ;
-      // le wrapping est géré par les clones (pas de logique de bord ici).
+      // --- Défilement automatique (12 s) ---------------------------------
+      // Pause sur interaction (reprise 12 s après la DERNIÈRE) et hors écran.
+      // Respecte prefers-reduced-motion (aucun autoplay). L'intervalle (12 s)
+      // est très supérieur à la transition+téléportation (~0,5 s) → aucun
+      // chevauchement possible avec le wrapping des clones.
+      const INTERVALLE = 12000;
+      const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       let visible = true;
+      let autoTimer: ReturnType<typeof setInterval> | null = null;
+      let repriseTimer: ReturnType<typeof setTimeout> | null = null;
+
+      const stopAuto = () => {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+      };
+      const startAuto = () => {
+        if (reduit) return; // accessibilité : pas d'autoplay
+        stopAuto();
+        autoTimer = setInterval(suivant, INTERVALLE); // 1er tick à +12 s
+      };
+      // Toute interaction : pause immédiate, reprise 12 s après la dernière.
+      const interaction = () => {
+        stopAuto();
+        if (repriseTimer) clearTimeout(repriseTimer);
+        repriseTimer = setTimeout(() => {
+          if (visible) startAuto();
+        }, INTERVALLE);
+      };
+
+      document.querySelector('.fleche-suiv')?.addEventListener('click', () => {
+        suivant();
+        interaction();
+      });
+      document.querySelector('.fleche-prec')?.addEventListener('click', () => {
+        precedent();
+        interaction();
+      });
+
+      // Visibilité (≥50%) : pilote le clavier ET l'autoplay.
       if (section) {
         new IntersectionObserver(
           (entries) => {
             visible = entries[0].isIntersecting;
+            if (visible) {
+              startAuto(); // reprise immédiate (1er tick à +12 s)
+            } else {
+              stopAuto(); // pause + cleanup (pas de leak hors écran)
+              if (repriseTimer) clearTimeout(repriseTimer);
+            }
           },
           { threshold: 0.5 },
         ).observe(section);
+      } else {
+        startAuto();
       }
+
       document.addEventListener('keydown', (e) => {
         if (!visible) return;
         if (e.key === 'ArrowRight') {
           e.preventDefault();
           suivant();
+          interaction();
         } else if (e.key === 'ArrowLeft') {
           e.preventDefault();
           precedent();
+          interaction();
         }
       });
     }
