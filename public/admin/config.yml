@@ -1,5 +1,5 @@
 # Configuration Decap CMS — interface d'admin de douzeland.
-# Auth : GitHub OAuth auto-hébergé (Netlify Functions) — branché en Phase 2.
+# Auth : GitHub OAuth auto-hébergé (Cloudflare Pages Functions : /api/auth + /api/callback).
 # local_backend permet d'éditer en LOCAL sans OAuth via `npx decap-server`.
 
 local_backend: true
@@ -8,8 +8,8 @@ backend:
   name: github
   repo: 12ouze/douzeland
   branch: main
-  base_url: https://douzeland.netlify.app      # hôte des fonctions OAuth
-  auth_endpoint: /.netlify/functions/auth      # fonction de démarrage du flow
+  base_url: https://douzeland.pages.dev        # hôte des fonctions OAuth (Cloudflare Pages)
+  auth_endpoint: api/auth                       # Pages Function → /api/auth
 
 site_url: https://douzeland.netlify.app
 locale: fr
