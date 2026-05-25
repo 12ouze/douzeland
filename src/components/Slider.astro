@@ -234,8 +234,20 @@ const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
   }
   .fleche-prec { left: 0.5rem; }
   .fleche-suiv { right: 0.5rem; }
-  @media (max-width: 768px) {
+  /* Mobile (≤600px) : photo entière en largeur, hauteur = ratio naturel.
+     Piste A (height auto) : avec le <Image> Astro (attributs width/height),
+     le navigateur réserve déjà le bon ratio → aucun crop, zéro CLS, pas de
+     calcul de ratio par slide. */
+  @media (max-width: 600px) {
     .fleche { display: none; }
+
+    .slider { height: auto; }
+    .piste {
+      height: auto;
+      align-items: flex-start; /* chaque slide garde sa hauteur naturelle */
+    }
+    .slide { height: auto; }
+    .slide-img { height: auto; } /* plein largeur, ratio naturel, aucun crop */
   }
 
   /* Points : indicateur de position */
