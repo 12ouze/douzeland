@@ -47,6 +47,7 @@ collections:
         time_format: false
         picker_utc: true
       - { label: "À la une (hero)", name: "featured", widget: "boolean", default: false }
+      - { label: "Afficher dans le carrousel", name: "in_slider", widget: "boolean", required: false, default: false }
       - { label: "Image", name: "image", widget: "image" }
       - { label: "Texte alternatif (alt)", name: "alt", widget: "string" }
       - { label: "Texte libre (optionnel)", name: "body", widget: "markdown", required: false }

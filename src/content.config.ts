@@ -14,6 +14,7 @@ const photos = defineCollection({
       title: z.string().optional(),
       date: z.date(),
       featured: z.boolean(),
+      in_slider: z.boolean().optional().default(false),
       order: z.number(),
       image: image(),
       alt: z.string(),

@@ -1,0 +1,223 @@
+---
+// Carrousel hero (photos in_slider). Le tri (order décroissant) est fait
+// par index.astro ; ici on rend les photos dans l'ordre reçu.
+// Pleine fenêtre, scroll-snap horizontal pur CSS. JS vanilla minimal pour
+// les flèches, le point actif (IntersectionObserver) et le fade du chevron.
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  photos: CollectionEntry<'photos'>[];
+}
+
+const { photos } = Astro.props;
+const multiple = photos.length > 1;
+---
+
+<section class="slider">
+  <!-- Masthead en overlay (remplace le Header quand le slider est affiché) -->
+  <div class="masthead-overlay">
+    <span class="titre">DOUZE LAND</span>
+    <span class="tagline">memoire vive</span>
+  </div>
+
+  <!-- Piste scroll-snap horizontale -->
+  <div class="piste" id="slider-piste">
+    {photos.map((photo, i) => (
+      <div class="slide" data-index={i}>
+        <Image
+          class="slide-img"
+          src={photo.data.image}
+          alt={photo.data.alt}
+          widths={[640, 960, 1280, 1920, 2400]}
+          sizes="100vw"
+          format="webp"
+          loading={i === 0 ? 'eager' : 'lazy'}
+        />
+      </div>
+    ))}
+  </div>
+
+  {multiple && (
+    <Fragment>
+      <button class="fleche fleche-prec" type="button" aria-label="Photo précédente">‹</button>
+      <button class="fleche fleche-suiv" type="button" aria-label="Photo suivante">›</button>
+      <div class="points">
+        {photos.map((_, i) => (
+          <span class:list={['point', { actif: i === 0 }]} data-dot={i}></span>
+        ))}
+      </div>
+    </Fragment>
+  )}
+
+  <span class="chevron" aria-hidden="true">⌄</span>
+</section>
+
+<script>
+  const piste = document.getElementById('slider-piste');
+  if (piste) {
+    const slides = Array.from(piste.querySelectorAll<HTMLElement>('.slide'));
+    const points = Array.from(document.querySelectorAll<HTMLElement>('.point'));
+    let courant = 0;
+
+    if (slides.length > 1) {
+      // Point actif suivi au scroll (vaut pour les flèches ET le swipe).
+      const io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) {
+              courant = Number((e.target as HTMLElement).dataset.index);
+              points.forEach((p, i) => p.classList.toggle('actif', i === courant));
+            }
+          });
+        },
+        { root: piste, threshold: 0.6 },
+      );
+      slides.forEach((s) => io.observe(s));
+
+      const aller = (i: number) => {
+        const cible = Math.max(0, Math.min(slides.length - 1, i));
+        slides[cible].scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' });
+      };
+      document.querySelector('.fleche-prec')?.addEventListener('click', () => aller(courant - 1));
+      document.querySelector('.fleche-suiv')?.addEventListener('click', () => aller(courant + 1));
+    }
+
+    // Chevron : fade out une fois que l'utilisateur a scrollé > 50px.
+    const chevron = document.querySelector('.chevron');
+    const onScroll = () => chevron?.classList.toggle('cache', window.scrollY > 50);
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+</script>
+
+<style>
+  .slider {
+    position: relative;
+    width: 100vw;
+    height: 100vh;   /* fallback */
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* Piste scroll-snap horizontale (scrollbar masquée) */
+  .piste {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .piste::-webkit-scrollbar { display: none; }
+
+  .slide {
+    flex: 0 0 100%;
+    width: 100vw;
+    height: 100%;
+    scroll-snap-align: start;
+  }
+  .slide-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* hero plein cadre, recadrage assumé */
+  }
+
+  /* Masthead overlay, haut-gauche, par-dessus la photo */
+  .masthead-overlay {
+    position: absolute;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 3;
+    color: #fff;
+    mix-blend-mode: difference;                 /* lisible sur tout fond */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);  /* fallback contraste */
+    pointer-events: none;
+  }
+  .masthead-overlay .titre {
+    display: block;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    line-height: 1;
+  }
+  .masthead-overlay .tagline {
+    display: block;
+    margin-top: 0.6rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+    opacity: 0.85;
+  }
+
+  /* Flèches (desktop seulement) */
+  .fleche {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+    border: none;
+    background: transparent;
+    color: #fff;
+    font-size: 2.6rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0.4rem 0.8rem;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  }
+  .fleche-prec { left: 0.5rem; }
+  .fleche-suiv { right: 0.5rem; }
+  @media (max-width: 768px) {
+    .fleche { display: none; }
+  }
+
+  /* Points : indicateur de position */
+  .points {
+    position: absolute;
+    bottom: 2.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .point {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #fff;
+    opacity: 0.4;
+    box-shadow: 0 0 3px rgba(0, 0, 0, 0.4);
+    transition: opacity 0.2s;
+  }
+  .point.actif { opacity: 1; }
+
+  /* Chevron : pulse douce, fade au scroll */
+  .chevron {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 1.8rem;
+    line-height: 1;
+    pointer-events: none;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    animation: chevron-pulse 1.6s ease-in-out infinite;
+    transition: opacity 0.4s ease;
+  }
+  .chevron.cache {
+    opacity: 0;
+    animation: none;
+  }
+  @keyframes chevron-pulse {
+    0%, 100% { opacity: 0.85; transform: translate(-50%, 0); }
+    50%      { opacity: 0.45; transform: translate(-50%, 4px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chevron { animation: none; }
+  }
+</style>

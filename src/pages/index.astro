@@ -1,20 +1,26 @@
 ---
-// Page d'accueil : masthead + galerie verticale des photos.
+// Page d'accueil : carrousel (photos in_slider) en hero s'il y en a, sinon
+// le masthead simple ; puis la galerie verticale de TOUTES les photos.
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
+import Slider from '../components/Slider.astro';
 import PhotoCard from '../components/PhotoCard.astro';
 import { getCollection } from 'astro:content';
 
-// Tri : champ `order` décroissant (plus grand = en haut), départage stable
-// par id. Cohérent avec le tri par défaut de l'admin Decap.
-const photos = (await getCollection('photos'))
-  .sort((a, b) => b.data.order - a.data.order || (a.id < b.id ? -1 : 1));
+// Tri commun : champ `order` décroissant (plus grand = en haut), départage
+// stable par id.
+const parOrdreDesc = (a, b) =>
+  b.data.order - a.data.order || (a.id < b.id ? -1 : 1);
+
+const toutes = await getCollection('photos');
+const sliderPhotos = toutes.filter((p) => p.data.in_slider).sort(parOrdreDesc);
+const listPhotos = [...toutes].sort(parOrdreDesc);
 ---
 
 <Layout title="douze land — photographies">
-  <Header />
+  {sliderPhotos.length > 0 ? <Slider photos={sliderPhotos} /> : <Header />}
   <main class="galerie">
-    {photos.map((photo) => <PhotoCard photo={photo} />)}
+    {listPhotos.map((photo) => <PhotoCard photo={photo} />)}
   </main>
 </Layout>
 
