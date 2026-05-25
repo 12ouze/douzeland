@@ -1,0 +1,87 @@
+---
+// Page individuelle d'une photo : /photo/<slug>
+// Une route par photo, générée au build via getStaticPaths().
+// Esprit brutaliste : photo entièrement visible (object-fit: contain),
+// centrée, bandes crème automatiques selon le ratio. Aucune métadonnée
+// visible, un seul élément d'interface (lien « retour »).
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+
+// Une page par entrée de la collection. L'id de l'entrée (nom du .md sans
+// extension, ex. « 2025-09-balade ») devient le slug de l'URL.
+export async function getStaticPaths() {
+  const photos = await getCollection('photos');
+  return photos.map((photo) => ({
+    params: { slug: photo.id },
+    props: { photo },
+  }));
+}
+
+const { photo } = Astro.props;
+const { image, alt, title } = photo.data;
+---
+
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title ?? 'douze land'} — douze land</title>
+  </head>
+  <body>
+    <a class="retour" href="/">← retour</a>
+    <Image
+      class="photo"
+      src={image}
+      alt={alt}
+      widths={[640, 960, 1280, 1920, 2400]}
+      sizes="100vw"
+      format="webp"
+    />
+  </body>
+</html>
+
+<style>
+  /* Fond crème (CLAUDE.md). Codé en dur ici tant qu'il n'y a pas de CSS
+     global ; à remonter en variable quand on créera le layout/la home.
+     C'est ce crème qu'on voit dans les bandes autour de la photo. */
+  body {
+    margin: 0;
+    height: 100vh;        /* fallback pour les vieux navigateurs */
+    height: 100dvh;       /* hauteur réelle du viewport (barres mobiles) */
+    overflow: hidden;     /* zéro scroll, ni vertical ni horizontal */
+    background: #f7f5ef;
+  }
+
+  /* La photo occupe tout le viewport puis object-fit: contain l'y inscrit
+     en entier (ratio préservé, jamais croppée). La surface non couverte
+     laisse voir le fond crème → bandes automatiques : haut/bas pour un
+     paysage, gauche/droite pour un portrait. Centrée (object-position
+     center par défaut). */
+  .photo {
+    display: block;
+    width: 100vw;
+    height: 100vh;        /* fallback */
+    height: 100dvh;
+    object-fit: contain;
+  }
+
+  /* Lien « retour » : fixe, haut-gauche, persistant au scroll. Petit bloc
+     crème (bords vifs = brutaliste) pour garantir le contraste sur
+     n'importe quelle zone de la photo, sans ornement. Cible tactile >= 44px.
+     env(safe-area-inset-*) décale sous les encoches mobiles. */
+  .retour {
+    position: fixed;
+    z-index: 10;          /* passe devant la photo */
+    top: calc(1.5rem + env(safe-area-inset-top, 0px));
+    left: calc(1.5rem + env(safe-area-inset-left, 0px));
+    padding: 0.6rem 0.9rem;
+    background: #f7f5ef;
+    color: #111;
+    text-decoration: none;
+    font: 600 0.85rem/1 system-ui, 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.04em;
+  }
+</style>
