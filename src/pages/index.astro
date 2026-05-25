@@ -1,6 +1,7 @@
 ---
-// Page d'accueil : carrousel (photos in_slider) en hero s'il y en a, sinon
-// le masthead simple ; puis la galerie verticale de TOUTES les photos.
+// Page d'accueil : carrousel (photos in_slider) en hero s'il y en a, puis
+// le masthead « DOUZE LAND » (toujours affiché, comme une page de titre)
+// au-dessus de la galerie verticale de TOUTES les photos.
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import Slider from '../components/Slider.astro';
@@ -18,7 +19,8 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
 ---
 
 <Layout title="douze land — photographies">
-  {sliderPhotos.length > 0 ? <Slider photos={sliderPhotos} /> : <Header />}
+  {sliderPhotos.length > 0 && <Slider photos={sliderPhotos} />}
+  <Header />
   <main class="galerie">
     {listPhotos.map((photo) => <PhotoCard photo={photo} />)}
   </main>
