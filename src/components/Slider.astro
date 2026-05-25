@@ -1,8 +1,10 @@
 ---
-// Carrousel hero (photos in_slider). Le tri (order décroissant) est fait
-// par index.astro ; ici on rend les photos dans l'ordre reçu.
-// Pleine fenêtre, scroll-snap horizontal pur CSS. JS vanilla minimal pour
-// les flèches, le point actif (IntersectionObserver) et le fade du chevron.
+// Carrousel hero (photos in_slider). Tri (order desc) fait par index.astro.
+// Boucle infinie FLUIDE via clones : on duplique la dernière slide avant la
+// première et la première après la dernière. On démarre sur la vraie 1re
+// slide (DOM index 1). Animation 'smooth' partout ; quand le scroll s'arrête
+// sur un clone, téléportation invisible ('auto') vers la vraie slide
+// équivalente (clone = image identique → saut imperceptible).
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 
@@ -11,7 +13,10 @@ interface Props {
 }
 
 const { photos } = Astro.props;
-const multiple = photos.length > 1;
+const n = photos.length;
+const multiple = n > 1;
+// DOM : [clone(dernière), ...vraies, clone(première)] si plusieurs photos.
+const slidesDom = multiple ? [photos[n - 1], ...photos, photos[0]] : photos;
 ---
 
 <section class="slider">
@@ -21,22 +26,34 @@ const multiple = photos.length > 1;
     <span class="tagline">memoire vive</span>
   </div>
 
-  <!-- Piste scroll-snap horizontale -->
-  <div class="piste" id="slider-piste">
-    {photos.map((photo, i) => (
-      <div class="slide" data-index={i}>
-        <Image
-          class="slide-img"
-          src={photo.data.image}
-          alt={photo.data.alt}
-          widths={[640, 960, 1280, 1920, 2400]}
-          sizes="100vw"
-          format="webp"
-          loading={i === 0 ? 'eager' : 'lazy'}
-        />
-      </div>
-    ))}
+  <!-- Piste scroll-snap horizontale (clones aux extrémités pour la boucle) -->
+  <div class="piste" id="slider-piste" data-count={n}>
+    {slidesDom.map((photo, domPos) => {
+      const estClone = multiple && (domPos === 0 || domPos === slidesDom.length - 1);
+      const premiereVisible = multiple ? domPos === 1 : domPos === 0;
+      return (
+        <div class="slide" data-clone={estClone ? 'true' : undefined} aria-hidden={estClone ? 'true' : undefined}>
+          <Image
+            class="slide-img"
+            src={photo.data.image}
+            alt={photo.data.alt}
+            widths={[640, 960, 1280, 1920, 2400]}
+            sizes="100vw"
+            format="webp"
+            loading={premiereVisible ? 'eager' : 'lazy'}
+          />
+        </div>
+      );
+    })}
   </div>
+
+  <!-- Anti-flash : positionne sur la 1re vraie slide avant le 1er paint -->
+  <script is:inline>
+    (function () {
+      var p = document.getElementById('slider-piste');
+      if (p && p.children.length > 1) p.scrollLeft = p.clientWidth;
+    })();
+  </script>
 
   {multiple && (
     <Fragment>
@@ -44,7 +61,7 @@ const multiple = photos.length > 1;
       <button class="fleche fleche-suiv" type="button" aria-label="Photo suivante">›</button>
       <div class="points">
         {photos.map((_, i) => (
-          <span class:list={['point', { actif: i === 0 }]} data-dot={i}></span>
+          <span class:list={['point', { actif: i === 0 }]}></span>
         ))}
       </div>
     </Fragment>
@@ -56,56 +73,72 @@ const multiple = photos.length > 1;
 <script>
   const piste = document.getElementById('slider-piste');
   if (piste) {
-    const slides = Array.from(piste.querySelectorAll<HTMLElement>('.slide'));
+    const n = Number(piste.dataset.count); // nb de VRAIES photos
     const points = Array.from(document.querySelectorAll<HTMLElement>('.point'));
-    let courant = 0;
+    const total = piste.querySelectorAll('.slide').length; // n + 2 si clones
 
-    if (slides.length > 1) {
-      const dernier = slides.length - 1;
+    if (n > 1) {
       const section = piste.closest('.slider');
+      const largeur = () => piste.clientWidth; // 1 slide = 100% de la piste
 
-      // Point actif suivi au scroll (vaut pour flèches, clavier et swipe ;
-      // continue de fonctionner naturellement après une téléportation loop).
-      const io = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) {
-              courant = Number((e.target as HTMLElement).dataset.index);
-              points.forEach((p, i) => p.classList.toggle('actif', i === courant));
-            }
-          });
+      // Position DOM courante (arrondie) et index réel correspondant.
+      const domCourant = () => Math.round(piste.scrollLeft / largeur());
+      const reel = (dom: number) => (((dom - 1) % n) + n) % n;
+
+      // Démarrer sur la 1re vraie slide (DOM index 1), pas sur le clone.
+      // (Doublon de l'init inline, par sécurité ; idempotent.)
+      piste.scrollLeft = largeur();
+
+      const majPoints = () => {
+        const r = reel(domCourant());
+        points.forEach((p, i) => p.classList.toggle('actif', i === r));
+      };
+      majPoints();
+
+      const goDom = (dom: number, behavior: ScrollBehavior) =>
+        piste.scrollTo({ left: dom * largeur(), behavior });
+
+      // 'smooth' pour tous les clics : le wrapping est géré par les clones
+      // + la téléportation post-atterrissage (plus de "if dernier → 1").
+      const suivant = () => goDom(domCourant() + 1, 'smooth');
+      const precedent = () => goDom(domCourant() - 1, 'smooth');
+
+      // Quand le scroll s'arrête sur un clone, téléportation invisible vers
+      // la vraie slide équivalente (même image → aucun saut visible).
+      const teleporterSiClone = () => {
+        const dom = domCourant();
+        if (dom === 0) goDom(n, 'auto'); // clone de fin → vraie dernière
+        else if (dom === total - 1) goDom(1, 'auto'); // clone de début → vraie première
+      };
+
+      // Détection "scroll arrêté" par debounce (couvre clics smooth ET swipe).
+      let settle: ReturnType<typeof setTimeout>;
+      piste.addEventListener(
+        'scroll',
+        () => {
+          majPoints();
+          clearTimeout(settle);
+          settle = setTimeout(teleporterSiClone, 120);
         },
-        { root: piste, threshold: 0.6 },
+        { passive: true },
       );
-      slides.forEach((s) => io.observe(s));
-
-      // Chaque slide fait 100% de la largeur de la piste.
-      const goTo = (i: number, behavior: ScrollBehavior) =>
-        piste.scrollTo({ left: i * piste.clientWidth, behavior });
-      // Loop infini : au-delà des bornes, téléportation instantanée ('auto')
-      // à l'autre bout (évite un scroll inverse visible) ; sinon 'smooth'.
-      const suivant = () =>
-        courant >= dernier ? goTo(0, 'auto') : goTo(courant + 1, 'smooth');
-      const precedent = () =>
-        courant <= 0 ? goTo(dernier, 'auto') : goTo(courant - 1, 'smooth');
 
       document.querySelector('.fleche-suiv')?.addEventListener('click', suivant);
       document.querySelector('.fleche-prec')?.addEventListener('click', precedent);
 
       // Clavier ← → : actif seulement quand le slider est ≥50% visible ;
-      // sinon on n'intercepte rien (le navigateur gère normalement).
-      let sliderVisible = true;
+      // le wrapping est géré par les clones (pas de logique de bord ici).
+      let visible = true;
       if (section) {
-        const vis = new IntersectionObserver(
+        new IntersectionObserver(
           (entries) => {
-            sliderVisible = entries[0].isIntersecting;
+            visible = entries[0].isIntersecting;
           },
           { threshold: 0.5 },
-        );
-        vis.observe(section);
+        ).observe(section);
       }
       document.addEventListener('keydown', (e) => {
-        if (!sliderVisible) return;
+        if (!visible) return;
         if (e.key === 'ArrowRight') {
           e.preventDefault();
           suivant();
