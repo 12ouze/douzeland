@@ -8,7 +8,8 @@ backend:
   name: github
   repo: 12ouze/douzeland
   branch: main
-  # base_url + auth_endpoint (fonctions OAuth) seront ajoutés en Phase 2.
+  base_url: https://douzeland.netlify.app      # hôte des fonctions OAuth
+  auth_endpoint: /.netlify/functions/auth      # fonction de démarrage du flow
 
 site_url: https://douzeland.netlify.app
 locale: fr
