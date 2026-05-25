@@ -31,9 +31,15 @@ collections:
     slug: "{{year}}-{{month}}-{{slug}}"
     identifier_field: "title"
     summary: "{{title}}"
-    sortable_fields: ["date", "title"]
+    # Syntaxe Decap valide (cf. schéma de decap-cms 3.12.2) : array dont UN
+    # item objet porte default_sort. Ici l'admin s'ouvre trié par order desc.
+    sortable_fields:
+      - { field: order, default_sort: desc }
+      - date
+      - title
     fields:
       - { label: "Titre", name: "title", widget: "string", required: false }
+      - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", required: true, hint: "Plus grand = affiché plus haut. Utilise des multiples de 10. Nouvelles photos : prends un chiffre plus grand que le max actuel." }
       - label: "Date"
         name: "date"
         widget: "datetime"
