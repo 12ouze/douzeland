@@ -23,6 +23,7 @@ const estActif = (href) =>
     {liens.map((l) => (
       <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
     ))}
+    <!-- futurs liens : contact, about -->
   </nav>
 </header>
 
@@ -35,7 +36,7 @@ const estActif = (href) =>
     padding: 5rem 1.5rem 4rem;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: baseline;
     gap: 2rem;
   }
 
