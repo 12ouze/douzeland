@@ -19,7 +19,21 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
 ---
 
 <Layout title="douze land — photographies">
-  {sliderPhotos.length > 0 && <Slider photos={sliderPhotos} />}
+  {sliderPhotos.length > 0 && (
+    <div class="slider-overlay-wrapper">
+      <Slider photos={sliderPhotos} />
+      <!-- Cartouches en overlay sur le slider (desktop seulement).
+           Le Header complet en flow reste affiché en dessous (page de titre). -->
+      <div class="cart cart-gauche">
+        <span class="titre">DOUZE LAND</span>
+        <span class="tagline">memoire vive</span>
+      </div>
+      <div class="cart cart-droite">
+        <a href="/archives">archives</a>
+        <a href="/contact">contact</a>
+      </div>
+    </div>
+  )}
   <Header />
   <main class="galerie">
     {listPhotos.map((photo) => <PhotoCard photo={photo} />)}
@@ -35,5 +49,66 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     display: flex;
     flex-direction: column;
     gap: 6rem; /* ~96px d'air entre les photos */
+  }
+
+  /* Wrapper du slider : ancrage absolute pour les 2 cartouches d'overlay.
+     Slider.astro est intouché ; tout l'overlay vit ici. */
+  .slider-overlay-wrapper {
+    position: relative;
+  }
+
+  /* Base commune aux 2 cartouches : rectangles noirs au coin haut du slider.
+     pointer-events: auto explicite pour rester cliquable (au cas où). */
+  .cart {
+    position: absolute;
+    top: 2rem;
+    z-index: 10;
+    background: var(--noir);
+    color: var(--creme);
+    padding: 1rem 1.5rem;
+    pointer-events: auto;
+  }
+
+  /* Cartouche gauche : identité, typo strictement identique au masthead. */
+  .cart-gauche {
+    left: 2rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .cart-gauche .titre {
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    line-height: 1;
+  }
+  .cart-gauche .tagline {
+    margin-top: 0.8rem;
+    opacity: 0.55;
+    font-size: 0.95rem;
+    letter-spacing: 0.08em;
+  }
+
+  /* Cartouche droite : 2 liens (aucun "actuel" puisqu'on est sur /).
+     Pas d'underline, pas de gras, pas de transition. */
+  .cart-droite {
+    right: 2rem;
+    display: flex;
+    gap: 1.5rem;
+  }
+  .cart-droite a {
+    color: var(--creme);
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-transform: lowercase;
+    letter-spacing: 0.12em;
+    opacity: 1;
+  }
+  .cart-droite a:hover { opacity: 0.7; }
+
+  /* Mobile (≤600px) : Slider.astro se met en display:none → on cache aussi
+     les cartouches pour qu'elles ne flottent pas par-dessus le Header en flow. */
+  @media (max-width: 600px) {
+    .cart { display: none; }
   }
 </style>
