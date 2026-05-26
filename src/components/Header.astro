@@ -40,7 +40,7 @@ const estActif = (href) =>
     padding: 5rem 1.5rem 4rem;
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
+    align-items: flex-end;
     gap: 2rem;
   }
 
@@ -87,14 +87,9 @@ const estActif = (href) =>
     font-weight: 700;
   }
 
-  /* Mobile (≤600px) : vertical (identité puis nav), aligné à gauche.
-     Nav sur une ligne (wrap si besoin). Pas de menu burger. */
+  /* Mobile (≤600px) : on reste en flex horizontal (nav à droite alignée
+     avec "memoire vive"). Wrap des liens autorisé si pas la place. */
   @media (max-width: 600px) {
-    .masthead {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1.2rem;
-    }
     .nav {
       flex-wrap: wrap;
     }
