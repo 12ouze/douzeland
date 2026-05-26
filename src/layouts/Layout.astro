@@ -2,7 +2,9 @@
 // Coquille HTML commune aux pages : <head> + import du CSS global.
 // Le header/footer ne sont PAS ici : toutes les pages n'en veulent pas
 // (ex. la page photo plein écran) → on les compose page par page.
+// Popup : inclus globalement, ne s'affiche que si flag sessionStorage posé.
 import '../styles/global.css';
+import Popup from '../components/Popup.astro';
 
 interface Props {
   title: string;
@@ -25,5 +27,6 @@ const { title, description } = Astro.props;
   </head>
   <body>
     <slot />
+    <Popup />
   </body>
 </html>

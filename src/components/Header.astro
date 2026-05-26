@@ -7,7 +7,8 @@
 const pathname = Astro.url.pathname;
 const liens = [
   { libelle: 'archives', href: '/archives' },
-  // À venir : { libelle: 'contact', href: '/contact' }, { libelle: 'about', href: '/about' }
+  { libelle: 'contact', href: '/contact' },
+  // À venir : { libelle: 'about', href: '/about' }
 ];
 
 const estActif = (href) =>
@@ -23,7 +24,7 @@ const estActif = (href) =>
     {liens.map((l) => (
       <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
     ))}
-    <!-- futurs liens : contact, about -->
+    <!-- futurs liens : about -->
   </nav>
 </header>
 

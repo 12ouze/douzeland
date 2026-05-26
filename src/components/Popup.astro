@@ -1,0 +1,93 @@
+---
+// Popup de confirmation auto-déclenché si sessionStorage.contact_sent === 'ok'.
+// Inclus dans Layout.astro → présent sur toutes les pages, mais ne s'affiche
+// QUE après un submit réussi du formulaire /contact (le flag est posé là).
+// Fermeture : bouton, clic sur l'overlay, ou touche Escape. Show/hide pur,
+// pas d'animation CSS (cf. consigne).
+---
+
+<div id="popup-confirmation" class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-titre">
+  <div class="boite">
+    <h2 id="popup-titre" class="titre">merci</h2>
+    <p class="texte">ton message est bien parti, je te recontacte vite.</p>
+    <button type="button" class="fermer">fermer</button>
+  </div>
+</div>
+
+<script>
+  const popup = document.getElementById('popup-confirmation');
+  if (popup) {
+    const fermer = () => { popup.style.display = 'none'; };
+    const ouvrir = () => { popup.style.display = 'flex'; };
+
+    // Auto-ouverture si le flag a été posé par le submit /contact.
+    // Puis on retire le flag pour éviter une re-ouverture au refresh.
+    if (sessionStorage.getItem('contact_sent') === 'ok') {
+      ouvrir();
+      sessionStorage.removeItem('contact_sent');
+    }
+
+    // Bouton fermer.
+    popup.querySelector('.fermer')?.addEventListener('click', fermer);
+    // Clic sur l'overlay (en dehors de la boîte).
+    popup.addEventListener('click', (e) => {
+      if (e.target === popup) fermer();
+    });
+    // Touche Escape (uniquement si le popup est ouvert).
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && popup.style.display === 'flex') fermer();
+    });
+  }
+</script>
+
+<style>
+  /* Overlay plein écran, caché par défaut. Aucun fade : show/hide pur. */
+  .popup {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: none;                       /* surchargé par style.display = 'flex' à l'ouverture */
+    align-items: center;
+    justify-content: center;
+    background: rgba(17, 17, 17, 0.6);
+  }
+
+  /* Boîte crème, pas de border-radius (esthétique magazine). */
+  .boite {
+    max-width: 400px;
+    width: calc(100% - 2rem);
+    padding: 2rem;
+    background: var(--creme);
+    color: var(--noir);
+  }
+
+  /* Titre cohérent avec le masthead (gras, capitales, letter-spacing). */
+  .titre {
+    margin: 0 0 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .texte {
+    margin: 0 0 1.5rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  /* Bouton fermer : cohérent avec le bouton envoyer du formulaire. */
+  .fermer {
+    background: var(--noir);
+    color: var(--creme);
+    border: none;
+    border-radius: 0;
+    padding: 0.6rem 1.5rem;
+    font: inherit;
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+  }
+  .fermer:hover { opacity: 0.8; }
+</style>

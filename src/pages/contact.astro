@@ -1,0 +1,175 @@
+---
+// Page /contact : formulaire envoyé en AJAX à Web3Forms (service tiers
+// compatible Astro statique, 250 submits/mois gratuit). Sur succès → flag
+// `contact_sent` dans sessionStorage, puis redirection vers /, où le Popup
+// (inclus via Layout sur toutes les pages) s'auto-ouvre.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout title="contact — douze land">
+  <Header />
+  <main class="contact">
+    <form id="form-contact" class="form">
+      <!-- Champs cachés requis par Web3Forms -->
+      <input type="hidden" name="access_key" value="5caf0eb8-f520-43b4-960d-b32add66c7bb" />
+      <input type="hidden" name="from_name" value="douzeland - contact" />
+      <!-- Honeypot anti-bot : doit rester vide -->
+      <input type="checkbox" name="botcheck" style="display: none" tabindex="-1" autocomplete="off" />
+
+      <label class="champ">
+        <span class="label">nom</span>
+        <input type="text" name="name" required />
+      </label>
+
+      <label class="champ">
+        <span class="label">email</span>
+        <input type="email" name="email" required />
+      </label>
+
+      <label class="champ">
+        <span class="label">téléphone (optionnel)</span>
+        <input type="tel" name="phone" />
+      </label>
+
+      <label class="champ">
+        <span class="label">type de demande</span>
+        <select name="subject" required>
+          <option value="">—</option>
+          <option value="tirage">tirage</option>
+          <option value="exposition">exposition</option>
+          <option value="collaboration">collaboration</option>
+          <option value="autre">autre</option>
+        </select>
+      </label>
+
+      <label class="champ">
+        <span class="label">message</span>
+        <textarea name="message" required rows="5"></textarea>
+      </label>
+
+      <button type="submit" class="envoyer">envoyer</button>
+      <p id="erreur" class="erreur" hidden></p>
+    </form>
+  </main>
+</Layout>
+
+<script>
+  const form = document.getElementById('form-contact');
+  const btn = document.querySelector<HTMLButtonElement>('#form-contact .envoyer');
+  const erreur = document.getElementById('erreur');
+
+  if (form instanceof HTMLFormElement && btn) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const labelOriginal = btn.textContent ?? 'envoyer';
+      btn.disabled = true;
+      btn.textContent = 'envoi…';
+      erreur?.setAttribute('hidden', '');
+
+      try {
+        const data = Object.fromEntries(new FormData(form));
+        const res = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+        if (res.status === 200) {
+          sessionStorage.setItem('contact_sent', 'ok');
+          window.location.href = '/';
+          return;
+        }
+        throw new Error('status ' + res.status);
+      } catch {
+        btn.disabled = false;
+        btn.textContent = labelOriginal;
+        if (erreur) {
+          erreur.textContent =
+            'envoi impossible, réessaie ou écris directement à t.fleurie@gmail.com';
+          erreur.removeAttribute('hidden');
+        }
+      }
+    });
+  }
+</script>
+
+<style>
+  .contact {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+
+  .champ {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  .label {
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    color: var(--noir);
+  }
+
+  /* Inputs sobres : border noire, pas de border-radius, fond blanc. */
+  .form input[type='text'],
+  .form input[type='email'],
+  .form input[type='tel'],
+  .form select,
+  .form textarea {
+    border: 1px solid var(--noir);
+    border-radius: 0;
+    padding: 0.6rem;
+    background: #fff;
+    color: var(--noir);
+    font: inherit;
+    font-size: 1rem;
+  }
+
+  /* Focus : outline noir 2px, pas de glow bleu navigateur. */
+  .form input:focus,
+  .form select:focus,
+  .form textarea:focus {
+    outline: 2px solid var(--noir);
+    outline-offset: 0;
+  }
+
+  .form textarea {
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.5;
+  }
+
+  /* Bouton envoyer : fond noir, texte crème, fade hover opacity 0.8. */
+  .envoyer {
+    background: var(--noir);
+    color: var(--creme);
+    border: none;
+    border-radius: 0;
+    padding: 0.8rem 2rem;
+    font: inherit;
+    text-transform: lowercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    align-self: flex-start;
+  }
+  .envoyer:hover { opacity: 0.8; }
+  .envoyer:disabled { opacity: 0.5; cursor: wait; }
+
+  .erreur {
+    margin: 0.5rem 0 0;
+    color: #c00;
+    font-size: 0.9rem;
+  }
+</style>
