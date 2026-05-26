@@ -39,7 +39,7 @@ collections:
       - title
     fields:
       - { label: "Titre", name: "title", widget: "string", required: false }
-      - { label: "Ordre d'affichage", name: "order", widget: "number", value_type: "int", required: true, hint: "Plus grand = affiché plus haut. Utilise des multiples de 10. Nouvelles photos : prends un chiffre plus grand que le max actuel." }
+      - { label: "Ordre d'affichage", name: "order", widget: "order_quick", value_type: "int", required: true, hint: "Utilise les boutons (⏫ ↑ ↓ ⏬) pour réordonner, ou saisis un nombre. Plus grand = affiché plus haut." }
       - label: "Date"
         name: "date"
         widget: "datetime"

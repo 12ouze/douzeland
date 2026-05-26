@@ -10,5 +10,173 @@
     <!-- Decap CMS chargé depuis le CDN : aucune dépendance npm.
          La config est lue automatiquement dans ./config.yml. -->
     <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+
+    <!-- Widget custom `order_quick` : remplace le widget `number` du champ
+         `order` (cf. config.yml). Affiche un input numérique + 4 boutons
+         (⏫ ↑ ↓ ⏬). Ne modifie QUE la valeur du champ courant (sémantique
+         "insertion juste au-dessus/en-dessous", pas de swap : Decap n'a pas
+         d'API publique pour modifier une autre entry).
+         Lit les ordres des autres photos via l'API GitHub Contents (public,
+         sans auth), avec un cache sessionStorage de 30 s.
+         Si le fetch plante : mode "degraded" → ⏫/⏬ font ±10 depuis la
+         valeur courante, ↑/↓ se désactivent. -->
+    <script>
+      (function () {
+        if (typeof window === 'undefined' || !window.CMS) return;
+        if (typeof createClass === 'undefined' || typeof h === 'undefined') return;
+
+        var CACHE_KEY = 'douzeland-orders';
+        var TTL_MS = 30000;
+        var REPO = '12ouze/douzeland';
+        var FOLDER = 'src/content/photos';
+
+        function lireCache() {
+          try {
+            var brut = sessionStorage.getItem(CACHE_KEY);
+            if (!brut) return null;
+            var obj = JSON.parse(brut);
+            if (Date.now() - obj.ts < TTL_MS && Array.isArray(obj.all)) return obj.all;
+          } catch (e) { /* cache corrompu : ignore */ }
+          return null;
+        }
+        function ecrireCache(all) {
+          try {
+            sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), all: all }));
+          } catch (e) { /* quota : ignore */ }
+        }
+
+        function chargerOrders() {
+          var c = lireCache();
+          if (c) return Promise.resolve(c);
+          return fetch('https://api.github.com/repos/' + REPO + '/contents/' + FOLDER)
+            .then(function (r) {
+              if (!r.ok) throw new Error('list ' + r.status);
+              return r.json();
+            })
+            .then(function (files) {
+              var mds = files.filter(function (f) { return f.name.endsWith('.md'); });
+              return Promise.all(mds.map(function (f) {
+                return fetch(f.download_url)
+                  .then(function (r) { return r.ok ? r.text() : ''; })
+                  .then(function (t) {
+                    var m = t.match(/^order:\s*(-?\d+)/m);
+                    return m
+                      ? { slug: f.name.replace(/\.md$/, ''), order: parseInt(m[1], 10) }
+                      : null;
+                  });
+              }));
+            })
+            .then(function (arr) {
+              var all = arr.filter(function (x) { return x != null; });
+              ecrireCache(all);
+              return all;
+            });
+        }
+
+        function styleBouton(off) {
+          return {
+            opacity: off ? 0.4 : 1,
+            cursor: off ? 'not-allowed' : 'pointer',
+            padding: '0.3rem 0.6rem',
+            marginRight: '0.3rem',
+            font: 'inherit',
+            background: '#fff',
+            border: '1px solid #ccc',
+            borderRadius: '3px',
+            lineHeight: 1,
+          };
+        }
+
+        var Control = createClass({
+          getInitialState: function () {
+            return { status: 'loading', autres: [] };
+          },
+          componentDidMount: function () {
+            var that = this;
+            var slug =
+              (this.props.entry && this.props.entry.get && this.props.entry.get('slug')) || '';
+            chargerOrders()
+              .then(function (all) {
+                var autres = all
+                  .filter(function (x) { return x.slug !== slug; })
+                  .map(function (x) { return x.order; })
+                  .sort(function (a, b) { return a - b; });
+                that.setState({ status: 'ok', autres: autres });
+              })
+              .catch(function () {
+                that.setState({ status: 'degraded', autres: [] });
+              });
+          },
+          fixer: function (v) {
+            // Toujours entier (cohérent avec value_type:int + Zod z.number()).
+            this.props.onChange(Number.isFinite(v) ? Math.round(v) : null);
+          },
+          onInput: function (e) {
+            var raw = e.target.value;
+            this.fixer(raw === '' ? null : parseInt(raw, 10));
+          },
+          enBas: function () {
+            var s = this.state, autres = s.autres;
+            var v = typeof this.props.value === 'number' ? this.props.value : 0;
+            this.fixer(s.status === 'ok' && autres.length ? autres[0] - 10 : v - 10);
+          },
+          enHaut: function () {
+            var s = this.state, autres = s.autres;
+            var v = typeof this.props.value === 'number' ? this.props.value : 0;
+            this.fixer(s.status === 'ok' && autres.length ? autres[autres.length - 1] + 10 : v + 10);
+          },
+          descendre: function () {
+            var v = this.props.value;
+            var infs = this.state.autres.filter(function (o) { return o < v; });
+            if (infs.length) this.fixer(infs[infs.length - 1] - 1);
+          },
+          monter: function () {
+            var v = this.props.value;
+            var sup = this.state.autres.find(function (o) { return o > v; });
+            if (sup != null) this.fixer(sup + 1);
+          },
+          render: function () {
+            var v = this.props.value;
+            var s = this.state.status;
+            var autres = this.state.autres;
+            var hasV = typeof v === 'number';
+            var ok = s === 'ok';
+            var supExiste = ok && hasV && autres.some(function (o) { return o > v; });
+            var infExiste = ok && hasV && autres.some(function (o) { return o < v; });
+            var offGros = s === 'loading';   // ⏫ et ⏬ : disabled pendant le chargement
+            var offUp = !supExiste;
+            var offDown = !infExiste;
+
+            var note =
+              s === 'loading' ? 'Chargement des autres ordres…' :
+              s === 'degraded' ? '⚠️ Voisins inconnus (réseau ?) — ⏫/⏬ font ±10 depuis la valeur courante, ↑/↓ désactivés.' :
+              autres.length === 0 ? 'Aucune autre photo dans la collection.' :
+              null;
+
+            return h('div', null,
+              h('input', {
+                id: this.props.forID,
+                type: 'number',
+                value: hasV ? v : '',
+                onChange: this.onInput,
+                className: this.props.classNameWrapper,
+                style: { width: '100%', padding: '0.4rem', font: 'inherit', boxSizing: 'border-box' },
+              }),
+              h('div', { style: { marginTop: '0.5rem' } },
+                h('button', { type: 'button', title: 'Tout en haut',         disabled: offGros, style: styleBouton(offGros), onClick: this.enHaut },    '⏫'),
+                h('button', { type: 'button', title: "Monter d'un cran",     disabled: offUp,   style: styleBouton(offUp),   onClick: this.monter },    '↑'),
+                h('button', { type: 'button', title: "Descendre d'un cran",  disabled: offDown, style: styleBouton(offDown), onClick: this.descendre }, '↓'),
+                h('button', { type: 'button', title: 'Tout en bas',          disabled: offGros, style: styleBouton(offGros), onClick: this.enBas },     '⏬')
+              ),
+              note
+                ? h('div', { style: { marginTop: '0.4rem', fontSize: '0.8rem', opacity: 0.6 } }, note)
+                : null
+            );
+          },
+        });
+
+        CMS.registerWidget('order_quick', Control);
+      })();
+    </script>
   </body>
 </html>
