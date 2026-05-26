@@ -88,8 +88,19 @@ const estActif = (href) =>
   }
 
   /* Mobile (≤600px) : on reste en flex horizontal (nav à droite alignée
-     avec "memoire vive"). Wrap des liens autorisé si pas la place. */
+     avec "memoire vive").
+     - Titre : no-wrap + taille réduite pour tenir sur 1 ligne à côté des liens.
+     - Lien de la page courante masqué pour libérer de la place sur les autres
+       (la classe .actuel n'est posée que sur 0 ou 1 lien selon la page).
+     - Wrap des liens autorisé en filet de sécurité. */
   @media (max-width: 600px) {
+    .titre {
+      white-space: nowrap;
+      font-size: 1.2rem;
+    }
+    .nav .lien.actuel {
+      display: none;
+    }
     .nav {
       flex-wrap: wrap;
     }
