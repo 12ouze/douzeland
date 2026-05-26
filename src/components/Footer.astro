@@ -1,0 +1,80 @@
+---
+// Footer global : "DOUZE LAND © 2026" à gauche, nav (home, archives, contact)
+// à droite. Inclus via Layout sur toutes les pages. Layout horizontal sur
+// desktop (flex space-between), vertical sur mobile (≤600px). Les 3 liens
+// sont TOUJOURS rendus (différent du Header qui masque 'home' sur /).
+const pathname = Astro.url.pathname;
+const liens = [
+  { libelle: 'home', href: '/' },
+  { libelle: 'archives', href: '/archives' },
+  { libelle: 'contact', href: '/contact' },
+];
+
+const estActif = (href) =>
+  pathname === href || pathname === href + '/';
+---
+
+<footer class="pied">
+  <p class="copyright">DOUZE LAND © 2026</p>
+  <nav class="nav">
+    {liens.map((l) => (
+      <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
+    ))}
+  </nav>
+</footer>
+
+<style>
+  /* Layout horizontal desktop, centré dans la même largeur max que le contenu. */
+  .pied {
+    max-width: var(--max-contenu);
+    margin: 0 auto;
+    padding: 4rem 1.5rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 2rem;
+  }
+
+  /* Copyright : sobre, opacité réduite, sans bold ni underline. */
+  .copyright {
+    margin: 0;
+    color: var(--noir);
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+  }
+
+  /* Nav : mêmes propriétés visuelles que celles du Header (lowercase, taille,
+     letter-spacing, opacités) ; pas de transition (consigne "pas d'animation"). */
+  .nav {
+    display: flex;
+    gap: 1.5rem;
+    flex-shrink: 0;
+  }
+  .nav .lien {
+    color: var(--noir);
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-transform: lowercase;
+    letter-spacing: 0.12em;
+    opacity: 0.6;
+  }
+  .nav .lien:hover { opacity: 1; }
+  .nav .lien.actuel {
+    opacity: 1;
+    font-weight: 700;
+  }
+
+  /* Mobile (≤600px) : vertical (copyright puis nav), aligné à gauche.
+     Nav reste en ligne, wrap si besoin. Pas de menu burger. */
+  @media (max-width: 600px) {
+    .pied {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.2rem;
+    }
+    .nav {
+      flex-wrap: wrap;
+    }
+  }
+</style>
