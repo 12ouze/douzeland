@@ -1,6 +1,5 @@
 ---
-// Page /archives : grille 4 colonnes des photos HORS slider (les photos
-// in_slider sont déjà mises en avant sur la home, on évite le doublon ici).
+// Page /archives : grille 4 colonnes de TOUTES les photos publiées.
 // Tri identique à la home : `order` décroissant, départage stable par id.
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
@@ -10,9 +9,7 @@ import { getCollection } from 'astro:content';
 const parOrdreDesc = (a, b) =>
   b.data.order - a.data.order || (a.id < b.id ? -1 : 1);
 
-const photos = (await getCollection('photos'))
-  .filter((p) => p.data.in_slider === false)
-  .sort(parOrdreDesc);
+const photos = (await getCollection('photos')).sort(parOrdreDesc);
 ---
 
 <Layout title="archives — douze land">
