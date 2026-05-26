@@ -52,7 +52,10 @@ const photos = (await getCollection('photos')).sort(parOrdreDesc);
     .archives { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 600px) {
-    .archives { grid-template-columns: 1fr; }
+    .archives {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.3rem;
+    }
   }
 
   .vignette {
