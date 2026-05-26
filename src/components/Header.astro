@@ -22,9 +22,11 @@ const estActif = (href) =>
     <p class="tagline">memoire vive</p>
   </div>
   <nav class="nav">
-    {liens.map((l) => (
-      <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
-    ))}
+    {liens
+      .filter((l) => !(l.href === '/' && estActif('/')))
+      .map((l) => (
+        <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
+      ))}
     <!-- futurs liens : about -->
   </nav>
 </header>
