@@ -1,24 +1,42 @@
 ---
-// Masthead du site : titre DOUZE LAND + tagline « memoire vive » + nav sobre.
-// Le titre est un lien vers la home. La nav surligne (gras + opacité 1) le
-// lien correspondant à la page courante.
+// Masthead du site : layout horizontal desktop (identité à gauche, nav à
+// droite, verticalement centrées). Mobile (≤600px) : passage en vertical
+// (identité puis nav, alignement gauche, pas de burger).
+// Nav prête à accueillir d'autres liens (contact, about…) : itération sur
+// le tableau `liens` ci-dessous.
 const pathname = Astro.url.pathname;
-const surArchives = pathname === '/archives' || pathname === '/archives/';
+const liens = [
+  { libelle: 'archives', href: '/archives' },
+  // À venir : { libelle: 'contact', href: '/contact' }, { libelle: 'about', href: '/about' }
+];
+
+const estActif = (href) =>
+  pathname === href || pathname === href + '/';
 ---
 
 <header class="masthead">
-  <a class="titre" href="/">DOUZE LAND</a>
-  <p class="tagline">memoire vive</p>
+  <div class="identite">
+    <a class="titre" href="/">DOUZE LAND</a>
+    <p class="tagline">memoire vive</p>
+  </div>
   <nav class="nav">
-    <a href="/archives" class:list={['lien', { actuel: surArchives }]}>archives</a>
+    {liens.map((l) => (
+      <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
+    ))}
   </nav>
 </header>
 
 <style>
+  /* Layout horizontal desktop : identité à gauche, nav à droite,
+     verticalement centrée par rapport au bloc identité. */
   .masthead {
     max-width: var(--max-contenu);
     margin: 0 auto;
     padding: 5rem 1.5rem 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
   }
 
   /* Titre : sans-serif gras, capitales, letter-spacing ample (CLAUDE.md). */
@@ -41,24 +59,39 @@ const surArchives = pathname === '/archives' || pathname === '/archives/';
     letter-spacing: 0.08em;
   }
 
-  /* Nav sobre sous la tagline. Lien courant en gras + pleine opacité. */
+  /* Nav : sobre, minuscules. Lien courant en gras + pleine opacité
+     (gras choisi plutôt que soulignement — passe mieux si la même nav
+     est un jour réutilisée en overlay mix-blend-mode). */
   .nav {
-    margin-top: 1.2rem;
     display: flex;
     gap: 1.5rem;
+    flex-shrink: 0;
   }
   .nav .lien {
     color: var(--noir);
     text-decoration: none;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     text-transform: lowercase;
     letter-spacing: 0.12em;
-    opacity: 0.55;
+    opacity: 0.6;
     transition: opacity 0.2s ease;
   }
   .nav .lien:hover { opacity: 1; }
   .nav .lien.actuel {
     opacity: 1;
     font-weight: 700;
+  }
+
+  /* Mobile (≤600px) : vertical (identité puis nav), aligné à gauche.
+     Nav sur une ligne (wrap si besoin). Pas de menu burger. */
+  @media (max-width: 600px) {
+    .masthead {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.2rem;
+    }
+    .nav {
+      flex-wrap: wrap;
+    }
   }
 </style>
