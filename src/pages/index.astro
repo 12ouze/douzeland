@@ -30,6 +30,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
       </div>
       <div class="cart cart-droite">
         <a href="/archives">archives</a>
+        <span class="separateur" aria-hidden="true">|</span>
         <a href="/contact">contact</a>
       </div>
     </div>
@@ -94,7 +95,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   .cart-droite {
     right: 2rem;
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
   }
   .cart-droite a {
     color: var(--creme);
@@ -105,6 +106,22 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     opacity: 1;
   }
   .cart-droite a:hover { opacity: 0.7; }
+
+  /* Séparateur visuel entre les 2 liens, non cliquable, opacité réduite. */
+  .cart-droite .separateur {
+    color: var(--creme);
+    font-size: 0.85rem;
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  /* Masque l'overlay masthead INTERNE du Slider (.masthead-overlay vit
+     dans Slider.astro, qui reste intouché). :global() permet à ce sélecteur
+     scopé d'atteindre une classe d'un autre composant. Sans ça, l'overlay
+     blanc + mix-blend-mode du slider débordait derrière la cart-gauche. */
+  .slider-overlay-wrapper :global(.masthead-overlay) {
+    display: none;
+  }
 
   /* Mobile (≤600px) : Slider.astro se met en display:none → on cache aussi
      les cartouches pour qu'elles ne flottent pas par-dessus le Header en flow. */
