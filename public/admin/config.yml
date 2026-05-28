@@ -11,7 +11,7 @@ backend:
   base_url: https://douzeland.pages.dev        # hôte des fonctions OAuth (Cloudflare Pages)
   auth_endpoint: api/auth                       # Pages Function → /api/auth
 
-site_url: https://douzeland.netlify.app
+site_url: https://douzeland.pages.dev
 locale: fr
 
 # Images commitées dans src/assets/photos (optimisées par Astro au build) ;
