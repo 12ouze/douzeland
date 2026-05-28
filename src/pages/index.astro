@@ -41,6 +41,29 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   </main>
 </Layout>
 
+<script>
+  // Cartouche flèche scroll : clic (ou Entrée/Espace) → smooth scroll d'un
+  // viewport (100dvh) vers le bas, soit pile le début de la galerie sous le
+  // slider. Le glyphe .chevron vit dans Slider.astro (intouché, aria-hidden) ;
+  // on l'enrichit ici au runtime en vrai bouton accessible. Si pas de slider
+  // (aucune photo featured), .chevron est absent → le bloc est inerte.
+  const fleche = document.querySelector('.chevron');
+  if (fleche) {
+    fleche.setAttribute('role', 'button');
+    fleche.setAttribute('tabindex', '0');
+    fleche.setAttribute('aria-label', 'Aller à la galerie');
+    fleche.removeAttribute('aria-hidden');
+    const scroller = () => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    fleche.addEventListener('click', scroller);
+    fleche.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        scroller();
+      }
+    });
+  }
+</script>
+
 <style>
   /* Liste verticale : 1 colonne centrée, grandes images, beaucoup d'air. */
   .galerie {
@@ -155,6 +178,11 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     animation: none !important;
     transform: translateX(-50%) !important;
     opacity: 1 !important;
+    /* La cartouche est décorative dans Slider.astro (pointer-events: none).
+       On la rend cliquable ici : annule le none + curseur main au survol.
+       Le comportement (smooth scroll) est ajouté par le <script> ci-dessous. */
+    pointer-events: auto;
+    cursor: pointer;
   }
 
   /* Mobile (≤600px) : Slider.astro se met en display:none → on cache aussi
