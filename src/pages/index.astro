@@ -123,6 +123,30 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     display: none;
   }
 
+  /* Chevron scroll : transformé en cartouche noire cohérente avec les
+     autres overlays. Slider.astro intouché ; override via :global().
+     !important nécessaire pour neutraliser la pulse animation (qui anime
+     aussi le transform) et la classe .cache ajoutée par le JS du Slider
+     au scroll > 50px (qui mettrait opacity: 0). */
+  .slider-overlay-wrapper :global(.chevron) {
+    background: var(--noir);
+    color: var(--creme);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Padding asymétrique : le glyphe ⌄ (U+2304) est dessiné dans la
+       partie haute du cadran de texte de la fonte → il apparaît collé
+       au bas du rectangle. On compense avec padding-bottom > padding-top
+       pour le pousser vers le haut. Hauteur totale ~2.2rem. */
+    padding: 0rem 0.9rem 0.8rem;
+    font-size: 1.7rem;
+    line-height: 1;
+    text-shadow: none;
+    animation: none !important;
+    transform: translateX(-50%) !important;
+    opacity: 1 !important;
+  }
+
   /* Mobile (≤600px) : Slider.astro se met en display:none → on cache aussi
      les cartouches pour qu'elles ne flottent pas par-dessus le Header en flow. */
   @media (max-width: 600px) {
