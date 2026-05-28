@@ -123,6 +123,16 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     display: none;
   }
 
+  /* Masque les points de pagination du slider : redondants avec les flèches
+     + l'autoplay + la cartouche chevron, et trop "carrousel marketing" pour
+     le style éditorial. Slider.astro intouché ; le markup des points reste en
+     place (.points), on les cache via :global(). Pas de saut de layout : .points
+     est position: absolute, donc hors flux (le chevron, lui aussi absolute,
+     ne bouge pas). Pour les remettre un jour : supprimer cette règle. */
+  .slider-overlay-wrapper :global(.points) {
+    display: none;
+  }
+
   /* Chevron scroll : transformé en cartouche noire cohérente avec les
      autres overlays. Slider.astro intouché ; override via :global().
      !important nécessaire pour neutraliser la pulse animation (qui anime
