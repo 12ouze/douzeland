@@ -16,11 +16,11 @@ La photo parle, le site sert juste à la mettre en valeur.
 ## Stack technique
 
 - **Astro v6** (statique, `output: 'static'` par défaut)
-- **Node 22+** requis (cf. `netlify.toml`)
+- **Node 22+** requis
 - **Aucun framework UI** (pas de React, Vue, Svelte) — Astro pur
 - **CSS vanille** (pas de Tailwind, pas de Sass) — on apprend les
   bases, on garde le contrôle
-- **Hébergement Netlify** branché en CI/CD sur GitHub
+- **Hébergement Cloudflare Pages** branché en CI/CD sur GitHub
 - **Repo** : github.com/12ouze/douzeland
 
 ## Direction artistique
@@ -119,6 +119,8 @@ Stockage des photos » pour le détail et la justification.
 
 douzeland/
 ├── public/              # Assets statiques (favicon, robots.txt)
+├── functions/
+│   └── api/             # Cloudflare Pages Functions (auth.js, callback.js — OAuth Decap)
 ├── src/
 │   ├── components/      # Composants réutilisables (.astro)
 │   ├── layouts/         # Layouts de page (Layout.astro)
@@ -126,7 +128,6 @@ douzeland/
 │   ├── photos/          # Photos + .md de métadonnées
 │   └── styles/          # CSS global, variables, reset
 ├── astro.config.mjs
-├── netlify.toml         # Config build Netlify (ne pas casser)
 ├── package.json
 └── CLAUDE.md            # Ce fichier
 
@@ -136,8 +137,9 @@ douzeland/
 - ❌ Installer Tailwind — CSS vanille pour apprendre
 - ❌ Ajouter du JavaScript côté client sauf si vraiment nécessaire
   (Astro favorise le HTML statique, c'est voulu)
-- ❌ Modifier `netlify.toml` sans comprendre l'impact (Node version,
-  publish dir — on s'est déjà fait avoir)
+- ❌ Installer un adapter Astro (`@astrojs/cloudflare`, `@astrojs/netlify`,
+  etc.) — ça casserait l'OAuth Decap. `astro.config.mjs` reste vide
+  volontairement.
 - ❌ Commit dans `dist/` ou `node_modules/` (le `.gitignore` est là
   pour ça, ne pas le contourner)
 - ❌ Ajouter des boutons sociaux, likes, partages — pas un réseau social
@@ -262,21 +264,17 @@ redécouvrir.
 Invariants d'infrastructure. Les casser met le site ou l'admin hors service.
 
 ### URL de production
-L'URL prod est **douzeland.netlify.app** (pas `candid-meerkat-b33c48…`).
-L'ancien sous-domaine auto-généré par Netlify a été libéré au renommage :
-un bookmark dessus renvoie « Site not found ». Toujours utiliser
-`douzeland.netlify.app`.
+L'URL prod est **`douzeland.pages.dev`** (Cloudflare Pages). L'ancien domaine `douzeland.netlify.app` est mort, ne plus l'utiliser.
 
 ### Pas d'adapter Astro
 `astro.config.mjs` est **vide volontairement** (`defineConfig({})` → output
-statique). Les Netlify Functions (`auth`, `callback`) sont gérées en natif
-par Netlify depuis `netlify/functions/`, **pas** via `@astrojs/netlify`.
-**Ne JAMAIS installer `@astrojs/netlify`** : ça basculerait le build en mode
-adapter/SSR et casserait l'OAuth Decap.
+statique). Les OAuth functions sont des Cloudflare Pages Functions dans
+`functions/api/auth.js` et `functions/api/callback.js`.
+Tout adapter basculerait le build en mode SSR et casserait l'OAuth Decap.
 
 ### Callback OAuth lié au domaine
 L'OAuth App GitHub a son `client_id` configuré avec le callback
-`https://douzeland.netlify.app/.netlify/functions/callback`. Si on change de
+`https://douzeland.pages.dev/api/callback`. Si on change de
 domaine un jour, mettre à jour **les deux** :
 1. l'*Authorization callback URL* sur github.com/settings/developers,
 2. le `base_url` (donc le `redirect_uri`) côté Decap (`public/admin/config.yml`).
