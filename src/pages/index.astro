@@ -3,6 +3,7 @@
 // le masthead « DOUZE LAND » (toujours affiché, comme une page de titre)
 // au-dessus de la galerie verticale de TOUTES les photos.
 import Layout from '../layouts/Layout.astro';
+import IntroGlitch from '../components/IntroGlitch.astro';
 import Header from '../components/Header.astro';
 import Slider from '../components/Slider.astro';
 import PhotoCard from '../components/PhotoCard.astro';
@@ -19,6 +20,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
 ---
 
 <Layout title="douze land — photographies">
+  <IntroGlitch />
   {sliderPhotos.length > 0 && (
     <div class="slider-overlay-wrapper">
       <Slider photos={sliderPhotos} />

@@ -1,0 +1,208 @@
+---
+// Écran d'intro glitch, HOME UNIQUEMENT (inclus dans index.astro, jamais dans
+// Layout.astro → absent d'archives/contact/photo).
+//
+// Plein écran noir, "DOUZE LAND" + "memoire vive" qui glitchent en même temps,
+// 1,2 s puis fade-out. Joué une fois par session (sessionStorage), skippable
+// au clic/touche, sauté si prefers-reduced-motion.
+//
+// Typo strictement reprise du masthead (Header.astro .titre / index.astro
+// .cart-gauche) : font-weight 800, uppercase, letter-spacing 0.22em,
+// line-height 1, var(--police). Seul le font-size change (agrandi plein écran).
+// Couleurs : traitement inversé déjà établi par la cartouche .cart-gauche
+// (creme sur noir), la tagline en creme à opacity 0.55 (= le gris voulu).
+---
+
+<!-- DÉCISION render-blocking, AVANT le premier paint : pose .intro-active sur
+     <html> si l'intro doit jouer. Parser-blocking (is:inline, pas de defer) →
+     s'exécute pendant le parsing du <body>, avant que le slider/galerie ne
+     soient peints → zéro flash de contenu.
+     JS off OU intro déjà vue OU reduced-motion → classe jamais posée →
+     l'overlay reste display:none (état CSS par défaut) → site accessible. -->
+<script is:inline>
+  (function () {
+    try {
+      var reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var vue = sessionStorage.getItem('douzeland_intro_vue');
+      if (!reduit && !vue) {
+        document.documentElement.classList.add('intro-active');
+        // Posée immédiatement (et pas à la fin) → robuste à un refresh en
+        // cours d'intro : on ne la rejoue pas dans la même session.
+        sessionStorage.setItem('douzeland_intro_vue', '1');
+      }
+    } catch (e) {
+      /* sessionStorage indisponible (mode privé strict) → on ne joue pas. */
+    }
+  })();
+</script>
+
+<div class="intro" aria-hidden="true">
+  <div class="intro-bloc">
+    <span class="intro-titre" data-texte="DOUZE LAND">DOUZE LAND</span>
+    <span class="intro-tagline">memoire vive</span>
+  </div>
+</div>
+
+<script>
+  // Comportement : ne s'exécute QUE si l'intro est montée (classe posée par le
+  // script inline ci-dessus). Timer 1,2 s, skip clic/touche, fade-out propre.
+  const racine = document.documentElement;
+  const intro = document.querySelector('.intro');
+
+  if (intro && racine.classList.contains('intro-active')) {
+    let minuteur;
+    const fermer = () => {
+      racine.classList.add('intro-finie');        // déclenche le fade-out CSS (0.3s)
+      window.removeEventListener('click', fermer);
+      window.removeEventListener('keydown', fermer);
+      clearTimeout(minuteur);
+      // Après le fade, on retire l'overlay du flux.
+      setTimeout(() => {
+        racine.classList.remove('intro-active');
+        racine.classList.remove('intro-finie');
+      }, 300);
+    };
+
+    minuteur = setTimeout(fermer, 1200);
+    window.addEventListener('click', fermer);
+    window.addEventListener('keydown', fermer);
+  }
+</script>
+
+<style>
+  /* Overlay plein écran NOIR, caché par défaut. Affiché seulement si <html>
+     porte .intro-active (posée par le script inline). z-index 10000 = palier
+     toast de la convention (au-dessus de tout : popup 1000, cart 10). */
+  .intro {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: none;                 /* défaut : caché (JS off / intro vue / reduced-motion) */
+    align-items: center;
+    justify-content: center;
+    background: var(--noir);
+    /* fallback OBLIGATOIRE avant dvh (cf. CLAUDE.md → viewport sans scroll). */
+    height: 100vh;
+    height: 100dvh;
+    width: 100vw;
+  }
+  :global(html.intro-active) .intro {
+    display: flex;
+  }
+
+  /* Fade-out rapide en fin d'intro (classe posée par le JS avant retrait). */
+  :global(html.intro-finie) .intro {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Bloc centré : les deux lignes empilées, centrées l'une par rapport à
+     l'autre. Léger jitter de position (glitch). */
+  .intro-bloc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Titre : typo du masthead, agrandie plein écran. Seul font-size diffère. */
+  .intro-titre {
+    display: inline-block;
+    position: relative;
+    color: var(--creme);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    line-height: 1;
+    font-size: clamp(2.5rem, 11vw, 7rem);
+    animation: jitter 0.7s infinite steps(1);
+  }
+
+  /* Tagline : reprise de .tagline (opacity 0.55 = le gris voulu, sur noir). */
+  .intro-tagline {
+    display: inline-block;
+    position: relative;
+    margin-top: 1.2rem;
+    color: var(--creme);
+    opacity: 0.55;
+    letter-spacing: 0.08em;
+    font-size: clamp(0.95rem, 2.5vw, 1.5rem);
+  }
+
+  /* GLITCH (CSS pur, pseudo-éléments) : ::before magenta + ::after cyan,
+     décalés (aberration chromatique RGB) avec des bandes clip-path qui
+     sautent. Les deux pseudos ont le fond noir de l'overlay pour recouvrir
+     proprement les bandes. content: attr(data-texte) reprend le texte. */
+  .intro-titre::before,
+  .intro-titre::after {
+    content: attr(data-texte);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--noir);
+    color: var(--creme);
+    overflow: hidden;
+    /* mêmes métriques typographiques que le parent (héritées) → alignement. */
+  }
+
+  /* Couche magenta, décalée à gauche, bandes propres. */
+  .intro-titre::before {
+    left: 4px;
+    text-shadow: -5px 0 #ff00c1;
+    animation: glitch-magenta 0.6s infinite linear alternate-reverse;
+  }
+  /* Couche cyan, décalée à droite, bandes propres (sens inverse). */
+  .intro-titre::after {
+    left: -4px;
+    text-shadow: 5px 0 #00fff9;
+    animation: glitch-cyan 0.6s infinite linear alternate-reverse;
+  }
+
+  /* Bandes magenta : clip-path inset qui saute à des hauteurs aléatoires. */
+  @keyframes glitch-magenta {
+    0%   { clip-path: inset(8% 0 80% 0); }
+    14%  { clip-path: inset(65% 0 8% 0); }
+    28%  { clip-path: inset(30% 0 55% 0); }
+    42%  { clip-path: inset(85% 0 3% 0); }
+    56%  { clip-path: inset(15% 0 70% 0); }
+    70%  { clip-path: inset(50% 0 28% 0); }
+    84%  { clip-path: inset(4% 0 88% 0); }
+    100% { clip-path: inset(45% 0 35% 0); }
+  }
+  /* Bandes cyan : autres hauteurs → les deux couches ne sautent pas pareil. */
+  @keyframes glitch-cyan {
+    0%   { clip-path: inset(72% 0 14% 0); }
+    14%  { clip-path: inset(16% 0 72% 0); }
+    28%  { clip-path: inset(55% 0 25% 0); }
+    42%  { clip-path: inset(3% 0 88% 0); }
+    56%  { clip-path: inset(40% 0 42% 0); }
+    70%  { clip-path: inset(78% 0 8% 0); }
+    84%  { clip-path: inset(25% 0 60% 0); }
+    100% { clip-path: inset(58% 0 28% 0); }
+  }
+
+  /* Jitter : micro-décalages de position du bloc entier. steps(1) → saccadé
+     (rendu numérique), pas un glissement fluide. */
+  @keyframes jitter {
+    0%   { transform: translate(0, 0); }
+    20%  { transform: translate(-4px, 2px); }
+    40%  { transform: translate(4px, -3px); }
+    60%  { transform: translate(-3px, -4px); }
+    80%  { transform: translate(3px, 3px); }
+    100% { transform: translate(-2px, 4px); }
+  }
+
+  /* ACCESSIBILITÉ : ceinture-bretelles. Le JS ne pose déjà pas .intro-active
+     en reduced-motion, mais on neutralise aussi tout en CSS par sécurité. */
+  @media (prefers-reduced-motion: reduce) {
+    .intro { display: none !important; }
+    .intro-titre,
+    .intro-titre::before,
+    .intro-titre::after {
+      animation: none !important;
+    }
+  }
+</style>
