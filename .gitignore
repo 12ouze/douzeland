@@ -20,5 +20,9 @@ pnpm-debug.log*
 # macOS-specific files
 .DS_Store
 
+# Dossier source des photos (images redimensionnées importées dans
+# src/assets/photos/ — ne PAS committer pour éviter les doublons)
+Photos Redimensionnées/
+
 # jetbrains setting folder
 .idea/
