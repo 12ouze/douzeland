@@ -116,12 +116,13 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     cursor: pointer;
   }
 
-  /* Respiration verticale douce (7px). translate(-50%, …) conserve le centrage
-     horizontal (left: 50% dans Slider.astro). alternate → va-et-vient sans
-     à-coup. */
+  /* Respiration verticale douce : remonte le chevron de 12px (loin du bord bas)
+     puis oscille entre -12px et -19px → il monte puis redescend. translate(-50%,
+     …) conserve le centrage horizontal (left: 50% dans Slider.astro).
+     alternate → va-et-vient sans à-coup. */
   @keyframes chevron-flottement {
-    from { transform: translate(-50%, 0); }
-    to   { transform: translate(-50%, 7px); }
+    from { transform: translate(-50%, -12px); }
+    to   { transform: translate(-50%, -19px); }
   }
 
   /* Accessibilité : coupe la respiration si l'utilisateur a réduit les
@@ -130,6 +131,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   @media (prefers-reduced-motion: reduce) {
     .slider-overlay-wrapper :global(.chevron) {
       animation: none !important;
+      transform: translate(-50%, -12px) !important;
     }
   }
 </style>
