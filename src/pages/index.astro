@@ -91,32 +91,45 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     display: none;
   }
 
-  /* Chevron scroll : transformé en cartouche noire cohérente avec les
-     autres overlays. Slider.astro intouché ; override via :global().
-     !important nécessaire pour neutraliser la pulse animation (qui anime
-     aussi le transform) et la classe .cache ajoutée par le JS du Slider
-     au scroll > 50px (qui mettrait opacity: 0). */
+  /* Chevron scroll : flèche blanche lisible, alignée sur le traitement des
+     flèches latérales ‹ › du slider (#fff + text-shadow) → reste lisible sur
+     photo claire comme sombre. Légère respiration verticale. Slider.astro
+     intouché ; override via :global().
+     - animation ... !important : neutralise la pulse d'origine (chevron-pulse)
+       ET la classe .cache posée par le JS du Slider au scroll (qui mettrait
+       animation: none). Le centrage horizontal est porté PAR les keyframes
+       (translate(-50%, …)), donc pas de transform statique ici : un transform
+       !important gagnerait sur l'animation et tuerait le flottement.
+     - opacity: 1 !important : neutralise l'opacity: 0 de .cache → le chevron
+       reste visible (comportement inchangé). */
   .slider-overlay-wrapper :global(.chevron) {
-    background: var(--noir);
-    color: var(--creme);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    /* Padding asymétrique : le glyphe ⌄ (U+2304) est dessiné dans la
-       partie haute du cadran de texte de la fonte → il apparaît collé
-       au bas du rectangle. On compense avec padding-bottom > padding-top
-       pour le pousser vers le haut. Hauteur totale ~2.2rem. */
-    padding: 0rem 0.9rem 0.8rem;
-    font-size: 1.7rem;
+    color: #fff;
+    font-size: 2.2rem; /* ~+29% vs 1.7rem, reste éditorial */
     line-height: 1;
-    text-shadow: none;
-    animation: none !important;
-    transform: translateX(-50%) !important;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); /* même valeur que .fleche */
     opacity: 1 !important;
+    animation: chevron-flottement 2s ease-in-out infinite alternate !important;
     /* La cartouche est décorative dans Slider.astro (pointer-events: none).
-       On la rend cliquable ici : annule le none + curseur main au survol.
-       Le comportement (smooth scroll) est ajouté par le <script> ci-dessous. */
+       On la rend cliquable ici : le smooth scroll est ajouté par le <script>
+       ci-dessus. */
     pointer-events: auto;
     cursor: pointer;
+  }
+
+  /* Respiration verticale douce (7px). translate(-50%, …) conserve le centrage
+     horizontal (left: 50% dans Slider.astro). alternate → va-et-vient sans
+     à-coup. */
+  @keyframes chevron-flottement {
+    from { transform: translate(-50%, 0); }
+    to   { transform: translate(-50%, 7px); }
+  }
+
+  /* Accessibilité : coupe la respiration si l'utilisateur a réduit les
+     animations. Le chevron reprend alors le transform de centrage de
+     Slider.astro (translateX(-50%)), donc reste centré. */
+  @media (prefers-reduced-motion: reduce) {
+    .slider-overlay-wrapper :global(.chevron) {
+      animation: none !important;
+    }
   }
 </style>
