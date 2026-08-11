@@ -99,8 +99,33 @@ Stockage des photos » pour le détail et la justification.
 3. **`npm run build`** en local pour valider le front-matter (le
    schéma de `src/content.config.ts` lève une erreur claire si un
    champ obligatoire manque ou si le chemin `image` est faux).
-4. **commit + push** → Netlify déploie tout seul, en optimisant
+4. **commit + push** → Cloudflare Pages déploie tout seul, en optimisant
    les images au passage (WebP, lazy load, multiples tailles).
+
+### Remplacer une photo par une version modifiée
+
+Ne jamais écraser ni supprimer l'image existante. La bonne procédure :
+
+1. **Exporter la nouvelle image sous un nom légèrement différent**, ex.
+   `nzf_5870-v2.jpg` (surtout pas le même nom que l'ancienne).
+2. Dans Decap, ouvrir la **fiche existante** et charger la nouvelle image dans
+   le champ *Image*.
+3. **Publier.**
+4. **Ne pas supprimer l'ancienne image.** Elle devient orpheline — donc sans
+   aucune conséquence (cf. « Fichiers orphelins — règle critique »).
+
+Pourquoi un nom différent : ça évite tout conflit de cache et toute
+manipulation destructive sur un fichier encore référencé. Le coût est quelques
+Mo de dépôt ; le bénéfice est de ne jamais bloquer un déploiement.
+
+### Vérifier qu'un déploiement a réussi
+
+**Dashboard Cloudflare → projet `douzeland` → onglet Deployments.**
+
+C'est le **premier endroit à regarder** quand quelque chose de publié
+n'apparaît pas sur le site. Un build rouge = la prod est figée sur la dernière
+version verte, et tout ce qui a été poussé depuis attend. Inutile de chercher
+ailleurs (cache navigateur, Decap…) tant que ce n'est pas vérifié.
 
 ## Conventions de code
 
@@ -191,6 +216,49 @@ Texte libre optionnel pour accompagner la photo.
 - **JS vanilla pur** (~30 lignes) — pas de lib externe type Swiper.js
 - Si une seule photo featured (ou fallback) → pas de flèches, juste l'image
 
+### Hero de la home — décisions de design
+
+État actuel de `src/pages/index.astro` (tout est implémenté là, via des
+overrides `:global()` ; `Slider.astro` reste intouché).
+
+**Hauteur du hero** — `calc(100vh - 2.5rem)` puis `calc(100dvh - 2.5rem)`
+(fallback `vh` obligatoire, cf. « Pattern CSS : viewport sans scroll »). Le hero
+est raccourci pour laisser dépasser une bande de crème du header : un contraste
+franc sous une photo plein cadre, qui signale qu'il y a du contenu en dessous.
+
+- La valeur est **fixe, pas en pourcentage**, et c'est délibéré : la crème
+  disponible avant le titre est le `padding-top` du Header (5rem = 80px), une
+  constante. Une bande en `vh` grandirait avec le viewport et finirait par
+  rogner le masthead sur grand écran (8vh = 104px sur un 1440p).
+- **Plancher : ~2rem.** En dessous, la bande se lit comme un défaut de mise en
+  page plutôt que comme une intention.
+
+**Compteur « N photographies »** — calculé dynamiquement depuis la collection
+(`listPhotos.length`, la source même de la galerie), **jamais écrit en dur** :
+le chiffre annoncé ne peut pas diverger de ce que le visiteur trouve en
+scrollant.
+
+**Animation** — le compteur et le chevron partagent l'animation
+`chevron-flottement` (même amplitude, même phase) pour flotter ensemble sans
+que l'écart entre eux varie. `prefers-reduced-motion` est géré sur les **deux**
+éléments animés.
+
+**Masthead « DOUZE LAND » du hero** — coin haut-gauche, marges égales de
+`2.5rem`. Typographie recopiée à l'identique de `Header.astro → .titre` (800,
+uppercase, `0.22em`, `clamp(1.6rem, 4vw, 2.6rem)`, `line-height: 1`) : c'est une
+**duplication, pas un héritage** (styles Astro scopés) — si la typo du Header
+change, la répercuter ici aussi.
+
+> **Arbitrage assumé** : le masthead est aligné sur **la photo** (pleine
+> largeur) et non sur la grille du site (conteneur `max-width: 1000px` centré).
+> Conséquence : en scrollant vers le header, le titre se décale
+> horizontalement au lieu de rester sur le même axe. **C'était un choix, pas un
+> oubli** — ne pas le « corriger » sans en reparler.
+
+À noter : `2.5rem` n'est pas non plus la marge des flèches du slider
+(`left: 0.5rem` + `padding-left: 0.8rem` → le glyphe démarre vers 1.3rem).
+Unifier les trois demanderait de toucher `Slider.astro`.
+
 ### Affichage des photos (pages individuelles)
 
 - `object-fit: contain` systématiquement — jamais `cover`, jamais de crop.
@@ -251,6 +319,18 @@ redécouvrir.
   partagé (probablement à la création de la home `/`).
 - Risque actuel : divergence de teinte si modifiée à un seul endroit.
 
+### `!important` accumulés dans index.astro
+
+- `index.astro` surcharge `Slider.astro` via des sélecteurs `:global()`, avec
+  plusieurs `!important` (chevron : `animation`, `opacity`, `transform`).
+- Ça **fonctionne** et c'est délibéré — c'est le prix à payer pour ne pas
+  toucher `Slider.astro` — mais c'est fragile : la spécificité et l'ordre des
+  règles deviennent difficiles à suivre, et une modification dans `Slider.astro`
+  peut casser un override sans prévenir.
+- À assainir **si le fichier devient difficile à maintenir** (piste : déplacer
+  ces styles dans `Slider.astro` avec des props, ou passer par des variables
+  CSS globales). Pas urgent tant que ça tient.
+
 ### Titres des photos à enrichir
 
 - 7 photos sur 8 ont `title: "2025-09-xxx"` (slug recyclé en titre faute
@@ -263,8 +343,44 @@ redécouvrir.
 
 Invariants d'infrastructure. Les casser met le site ou l'admin hors service.
 
+### Fichiers orphelins — règle critique
+
+Les deux sens d'« orphelin » n'ont **rien à voir** en termes de gravité :
+
+| Cas | Effet | Gravité |
+|---|---|---|
+| Image **sans** `.md` | Astro ne la référence pas, elle n'entre pas dans le build | **Inoffensif** — juste du poids mort dans le dépôt |
+| `.md` **sans** son image | `[ImageNotFound]` → le build échoue | **Critique** — plus rien ne se déploie |
+
+Quand le build échoue, Cloudflare **continue de servir la dernière version
+verte**. Le site reste donc en ligne et paraît normal, mais il est *figé* : plus
+aucune modification ne part en prod, y compris celles qui n'ont aucun rapport
+avec la photo fautive. Un seul `.md` orphelin bloque toute la file.
+
+**Corollaire, à respecter sans exception : ne jamais supprimer une image à la
+main.** En cas de doute, laisser traîner les fichiers en trop — quelques Mo
+inutiles ne coûtent rien, un déploiement bloqué coûte la journée.
+
+Vérification rapide avant de pousser :
+
+```bash
+npm run build   # échoue avec [ImageNotFound] si un .md pointe dans le vide
+```
+
 ### URL de production
-L'URL prod est **`douzeland.pages.dev`** (Cloudflare Pages). L'ancien domaine `douzeland.netlify.app` est mort, ne plus l'utiliser.
+L'URL prod est **`https://douzeland.com`** (domaine principal, servi par
+Cloudflare Pages). C'est l'adresse à donner, à tester et à mettre partout.
+
+Deux autres domaines existent, à ne pas confondre :
+
+| Domaine | Statut | Usage |
+|---|---|---|
+| `douzeland.com` | **actif** | URL publique du site |
+| `douzeland.pages.dev` | **actif** | domaine technique Cloudflare Pages ; porte encore l'OAuth Decap (cf. plus bas) — ne pas le débrancher |
+| `douzeland.netlify.app` | mort | ancien hébergeur, ne plus jamais l'utiliser |
+
+`pages.dev` répond toujours en 200 : ce n'est pas un reliquat à nettoyer, c'est
+lui qui fait tourner l'admin. Voir « Callback OAuth lié au domaine ».
 
 ### Pas d'adapter Astro
 `astro.config.mjs` est **vide volontairement** (`defineConfig({})` → output
@@ -274,10 +390,52 @@ Tout adapter basculerait le build en mode SSR et casserait l'OAuth Decap.
 
 ### Callback OAuth lié au domaine
 L'OAuth App GitHub a son `client_id` configuré avec le callback
-`https://douzeland.pages.dev/api/callback`. Si on change de
-domaine un jour, mettre à jour **les deux** :
+`https://douzeland.pages.dev/api/callback` — **sur `pages.dev`, pas sur
+`douzeland.com`**. C'est volontairement resté ainsi au passage sur le domaine
+principal : `public/admin/config.yml` porte toujours
+`base_url: https://douzeland.pages.dev`, et ça fonctionne.
+
+⚠️ Ne pas « harmoniser » le `base_url` vers `douzeland.com` par souci de
+cohérence : ça casserait l'authentification Decap instantanément, car le
+`redirect_uri` envoyé ne correspondrait plus au callback déclaré chez GitHub.
+Les deux doivent changer **ensemble ou pas du tout** :
 1. l'*Authorization callback URL* sur github.com/settings/developers,
 2. le `base_url` (donc le `redirect_uri`) côté Decap (`public/admin/config.yml`).
+
+Le champ `site_url` du même fichier est cosmétique (lien « voir le site » dans
+l'admin) : lui peut passer à `https://douzeland.com` sans risque.
+
+## Incidents connus
+
+### Désynchronisation Decap — 11 août 2026
+
+**Ce qui se passe** : Decap peut **supprimer une image sans supprimer son
+`.md`**, laissant une fiche orpheline qui pointe dans le vide. Le build casse,
+et tous les déploiements suivants sont bloqués (cf. « Fichiers orphelins —
+règle critique »).
+
+**Symptôme trompeur** — c'est là que se perd le temps :
+
+- la photo **reste visible sur le site**, parce que Cloudflare sert le dernier
+  build vert ;
+- elle **reste visible dans l'admin Decap** ;
+- alors que le fichier n'est **plus dans le dépôt**.
+
+Tout a l'air normal des deux côtés, et pourtant plus rien ne se déploie. Ne
+pas se fier à ce qu'affichent le site ou l'admin.
+
+**Vérification fiable** — une seule des deux suffit :
+
+1. chercher le fichier **directement sur GitHub** (dans `src/assets/photos/`) ;
+2. lancer **`npm run build` en local** → `[ImageNotFound]` nomme le `.md` fautif.
+
+**Correction** : soit re-téléverser l'image manquante, soit supprimer le `.md`
+orphelin — c'est une décision de contenu, elle revient à Douze, pas à l'IA.
+
+**Cas réel** : `2026-07-nzf_5870.md` a bloqué le déploiement une demi-journée.
+Trois photos publiées ce matin-là (dont NZF_5955, la plus récente) sont restées
+invisibles en prod alors qu'elles étaient correctement commitées — le seul
+symptôme visible était « ma nouvelle photo n'apparaît pas ».
 
 ## Contexte personnel
 
