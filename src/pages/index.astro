@@ -24,6 +24,14 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   {sliderPhotos.length > 0 && (
     <div class="slider-overlay-wrapper">
       <Slider photos={sliderPhotos} />
+      {/* Signature de couverture : le nom du site en petit, haut-centre du
+          hero. Classe .signature et NON .masthead-overlay — cette dernière est
+          masquée juste en dessous (overlay interne du Slider) ; réutiliser le
+          nom rendrait la signature invisible.
+          aria-hidden : le vrai masthead (lien, cliquable) est le <Header /> qui
+          suit immédiatement dans le DOM → sans ça, un lecteur d'écran
+          annoncerait « DOUZE LAND » deux fois de suite. */}
+      <p class="signature" aria-hidden="true">DOUZE LAND</p>
       {/* Indice de scroll (texte) : nombre de photos RÉELLEMENT listées plus
           bas (listPhotos, la source de la galerie) → le chiffre annoncé et ce
           que le visiteur trouve en scrollant ne peuvent pas diverger. */}
@@ -107,6 +115,49 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     height: calc(100dvh - 2.5rem);
   }
 
+  /* MASTHEAD DE COUVERTURE : « DOUZE LAND » en haut à gauche du hero, sur le
+     même axe vertical que le masthead de la bande crème (cf. ALIGNEMENT plus
+     bas) — tout le site étant aligné à gauche, un titre centré détonnait.
+     Les 5 propriétés typographiques sont RECOPIÉES à l'identique de
+     Header.astro → .titre (font-weight 800, uppercase, letter-spacing 0.22em,
+     clamp(1.6rem, 4vw, 2.6rem), line-height 1) → largeur rendue identique au
+     masthead de la bande crème. Elles sont dupliquées, pas partagées : si tu
+     changes la typo du Header un jour, il faut la répercuter ICI aussi (les
+     styles Astro étant scopés, aucun moyen d'hériter sans variable globale).
+     Ombre renforcée (0 2px 12px / 0.6) vs celle du chevron : à cette taille le
+     texte couvre beaucoup de surface, donc beaucoup plus de risques de tomber
+     sur une zone claire ou chargée.
+     Pas d'animation (ce n'est pas un indice de scroll, il n'a pas à flotter
+     avec le chevron) et pas de baseline « memoire vive », qui reste au masthead
+     du dessous. Non cliquable : on est déjà sur la home.
+
+     ALIGNEMENT SUR LA PHOTO (et non sur la grille du site) : marges égales de
+     2.5rem depuis le haut et depuis le bord gauche du hero. Le titre se cale
+     donc sur le cadre de l'image, pas sur le conteneur max-width: 1000px du
+     Header — au scroll, il y a un décalage horizontal avec le masthead crème,
+     c'est assumé.
+     À savoir : ce n'est PAS la marge des flèches du slider. Dans Slider.astro,
+     .fleche-prec est à left: 0.5rem avec padding: 0.4rem 0.8rem → le glyphe ‹
+     démarre vers 1.3rem (~21px), soit à peu près la moitié d'ici. Le chevron,
+     lui, est centré (left: 50%) : il n'a pas de marge gauche du tout. */
+  .signature {
+    position: absolute;
+    top: 2.5rem;
+    left: 2.5rem;
+    z-index: 4; /* même palier que le compteur */
+    margin: 0;
+    color: #fff;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: clamp(1.6rem, 4vw, 2.6rem);
+    line-height: 1;
+    opacity: 1;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
   /* INDICE DE SCROLL (2/2) : « N photographies » juste au-dessus du chevron.
      Même traitement que le chevron (#fff + text-shadow) → lisible sur photo
      claire comme sombre. Hors de .slider (qui est overflow: hidden), donc non
@@ -140,11 +191,12 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   }
 
   /* Mobile (≤600px) : Slider.astro masque .slider (display: none) → le wrapper
-     retombe à 0 de haut. Sans cette règle, le compteur (absolute) irait se
-     poser en blanc sur la crème du Header, illisible. On le masque avec le
-     hero : le duo bande + texte n'a de sens que quand il y a un hero. */
+     retombe à 0 de haut. Sans cette règle, les overlays (absolute) iraient se
+     poser en blanc sur la crème du Header, illisibles. On les masque avec le
+     hero : ils n'ont de sens que quand il y a un hero. */
   @media (max-width: 600px) {
-    .compteur {
+    .compteur,
+    .signature {
       display: none;
     }
   }
