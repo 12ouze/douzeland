@@ -1,9 +1,9 @@
 ---
-title: "NZF_2842-Modifier"
+title: NZF_2842-Modifier
+order: 740
 date: 2026-01-01
 featured: false
 in_slider: false
-order: 740
-image: "../../assets/photos/NZF_2842-Modifier.jpg"
-alt: "Photographie Douze Land"
+image: ../../assets/photos/nzf_2842.jpg
+alt: Photographie Douze Land
 ---
