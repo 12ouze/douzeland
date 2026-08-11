@@ -24,6 +24,12 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   {sliderPhotos.length > 0 && (
     <div class="slider-overlay-wrapper">
       <Slider photos={sliderPhotos} />
+      {/* Indice de scroll (texte) : nombre de photos RÉELLEMENT listées plus
+          bas (listPhotos, la source de la galerie) → le chiffre annoncé et ce
+          que le visiteur trouve en scrollant ne peuvent pas diverger. */}
+      <p class="compteur">
+        {listPhotos.length} photographie{listPhotos.length > 1 ? 's' : ''}
+      </p>
     </div>
   )}
   <Header />
@@ -39,12 +45,23 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   // on l'enrichit ici au runtime en vrai bouton accessible. Si pas de slider
   // (aucune photo featured), .chevron est absent → le bloc est inerte.
   const fleche = document.querySelector('.chevron');
-  if (fleche) {
+  const hero = document.querySelector('.slider-overlay-wrapper');
+  if (fleche && hero) {
     fleche.setAttribute('role', 'button');
     fleche.setAttribute('tabindex', '0');
     fleche.setAttribute('aria-label', 'Aller à la galerie');
     fleche.removeAttribute('aria-hidden');
-    const scroller = () => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+    // Destination = bas réel du hero, mesuré à chaque clic sur l'élément
+    // lui-même (jamais une constante). Le hero étant le 1er élément du flux
+    // (l'intro est en position: fixed), son bord bas en coordonnées document
+    // vaut rect.bottom + scrollY → le header crème arrive pile en haut du
+    // viewport. Dérivé de l'élément, donc juste tout seul si la hauteur du
+    // hero rechange (calc(100dvh - 4rem) aujourd'hui) ou si on redimensionne.
+    const scroller = () =>
+      window.scrollTo({
+        top: hero.getBoundingClientRect().bottom + window.scrollY,
+        behavior: 'smooth',
+      });
     fleche.addEventListener('click', scroller);
     fleche.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -71,6 +88,65 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
      Slider.astro est intouché ; tout l'overlay vit ici. */
   .slider-overlay-wrapper {
     position: relative;
+  }
+
+  /* INDICE DE SCROLL (1/2) : on raccourcit le hero pour laisser dépasser une
+     bande de la section crème qui suit → contraste franc sous une photo plein
+     cadre, on comprend qu'il y a du contenu en dessous. Slider.astro (100dvh)
+     est intouché ; override via :global().
+
+     Pourquoi 2.5rem FIXE et pas un pourcentage : la crème disponible avant le
+     titre « DOUZE LAND » est le padding-top du Header, soit 5rem = 80px — une
+     valeur FIXE, identique sur tous les écrans. Une bande en vh, elle, grandit
+     avec le viewport : 8vh = 64px sur un portable (OK) mais 104px sur un 1440p
+     → le masthead serait rogné de 24px. calc() garantit une bande de 40px
+     partout, donc 40px de marge avant le titre : jamais de titre coupé.
+     Le fallback vh reste obligatoire (cf. CLAUDE.md → viewport sans scroll). */
+  .slider-overlay-wrapper :global(.slider) {
+    height: calc(100vh - 2.5rem);  /* fallback */
+    height: calc(100dvh - 2.5rem);
+  }
+
+  /* INDICE DE SCROLL (2/2) : « N photographies » juste au-dessus du chevron.
+     Même traitement que le chevron (#fff + text-shadow) → lisible sur photo
+     claire comme sombre. Hors de .slider (qui est overflow: hidden), donc non
+     rogné ; positionné dans le wrapper, qui partage le même bord bas.
+     bottom: 2.3rem : le texte se cale juste au-dessus du glyphe ⌄. La valeur
+     mord sur la *boîte* du chevron (bottom: 1rem + 2.2rem de line-box), mais
+     pas sur son encre : le glyphe ⌄ n'occupe que le bas de sa line-box, donc
+     l'espace visuel restant est d'environ 10px. Les deux se lisent comme un
+     bloc. Écart CONSTANT pendant l'animation : le compteur et le chevron
+     partagent la même animation (même amplitude, même phase), donc la distance
+     entre eux ne varie jamais — c'est le décalage qui bougeait, pas l'écart. */
+  .compteur {
+    position: absolute;
+    bottom: 2.3rem;
+    left: 50%;
+    z-index: 4; /* au-dessus du chevron (3), même palier "navigation" */
+    margin: 0;
+    color: #fff;
+    font-size: 0.85rem;
+    letter-spacing: 0.22em; /* ample, aligné sur le letter-spacing du masthead */
+    text-transform: lowercase;
+    opacity: 0.9; /* 0.75 était trop pâle sur une photo claire */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); /* même valeur que le chevron */
+    white-space: nowrap;
+    /* Flotte avec le chevron plutôt que de rester fixe : le chevron oscille sur
+       7px, donc un texte statique verrait l'écart entre eux "pomper" de 13px à
+       6px en boucle. Même animation = écart constant, les deux se lisent comme
+       un seul bloc. Pour le figer : supprimer cette ligne (le centrage est alors
+       repris par la règle prefers-reduced-motion ci-dessous, à dupliquer ici). */
+    animation: chevron-flottement 2s ease-in-out infinite alternate;
+  }
+
+  /* Mobile (≤600px) : Slider.astro masque .slider (display: none) → le wrapper
+     retombe à 0 de haut. Sans cette règle, le compteur (absolute) irait se
+     poser en blanc sur la crème du Header, illisible. On le masque avec le
+     hero : le duo bande + texte n'a de sens que quand il y a un hero. */
+  @media (max-width: 600px) {
+    .compteur {
+      display: none;
+    }
   }
 
   /* Masque l'overlay masthead INTERNE du Slider (.masthead-overlay vit
@@ -129,7 +205,8 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
      animations. Le chevron reprend alors le transform de centrage de
      Slider.astro (translateX(-50%)), donc reste centré. */
   @media (prefers-reduced-motion: reduce) {
-    .slider-overlay-wrapper :global(.chevron) {
+    .slider-overlay-wrapper :global(.chevron),
+    .compteur {
       animation: none !important;
       transform: translate(-50%, -12px) !important;
     }
