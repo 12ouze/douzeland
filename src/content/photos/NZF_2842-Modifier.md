@@ -1,5 +1,5 @@
 ---
-title: NZF_2842-Modifier
+title: NZF_2842
 order: 740
 date: 2026-01-01
 featured: false
