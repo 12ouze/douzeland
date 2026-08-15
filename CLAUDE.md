@@ -314,10 +314,33 @@ redécouvrir.
 ### Fond crème codé en dur
 
 - La couleur `#f7f5ef` est actuellement en dur dans
-  `src/pages/photo/[slug].astro`.
+  `src/pages/photo/[slug].astro` **et dans `public/favicon.svg`**.
 - À remonter en **variable CSS globale** dès le premier layout/CSS
   partagé (probablement à la création de la home `/`).
+- ⚠️ `public/favicon.svg` ne pourra **jamais** utiliser cette variable : c'est
+  un fichier autonome, servi hors du pipeline Astro, sans accès au CSS du site.
+  La valeur y restera en dur — à reporter à la main si la teinte change (et à
+  regénérer `favicon.ico` + `apple-touch-icon.png` dans la foulée, ils en sont
+  dérivés).
 - Risque actuel : divergence de teinte si modifiée à un seul endroit.
+
+### Métadonnées `<head>` dupliquées dans deux fichiers
+
+- Le `<head>` du site existe en **deux exemplaires indépendants** :
+  `src/layouts/Layout.astro` (utilisé par `/`, `/archives`, `/contact`) et
+  `src/pages/photo/[slug].astro`, qui n'utilise **pas** le layout et porte son
+  propre `<head>`.
+- Concerne les icônes (`favicon.svg`, `favicon.ico`, `apple-touch-icon.png`)
+  mais aussi `charset`, `viewport`, `generator`.
+- **Toute modification des métadonnées doit être faite aux deux endroits.**
+  Sinon les 100+ pages `/photo/<slug>` divergent silencieusement du reste du
+  site — rien ne casse au build, ça se voit seulement en prod.
+- Vérification rapide :
+  ```bash
+  grep -n "rel=\"icon\"\|apple-touch-icon" src/layouts/Layout.astro src/pages/photo/\[slug\].astro
+  ```
+- À assainir si un jour la page photo peut passer par `Layout.astro` (elle ne
+  le fait pas aujourd'hui : elle ne veut ni header, ni footer, ni popup).
 
 ### `!important` accumulés dans index.astro
 
