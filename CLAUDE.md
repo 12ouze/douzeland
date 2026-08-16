@@ -249,15 +249,22 @@ que l'écart entre eux varie. `prefers-reduced-motion` est géré sur les **deux
 un héritage** (styles Astro scopés) — si la typo du Header change, la
 répercuter ici aussi.
 
-> **Exception : le `letter-spacing` diverge volontairement.** `0.15em` sur le
-> hero, `0.22em` dans le Header. **Ne pas resynchroniser** — ce n'est pas un
-> oubli. Sur la bande crème, l'aplat uniforme laisse l'approche ample se lire
-> comme une intention éditoriale ; sur la photo, le grain et le `text-shadow`
-> remplissent les blancs entre lettres, qui se lisent alors comme de la
-> dispersion — le mot se délite. La règle de duplication ci-dessus vaut donc
-> pour les 4 autres propriétés, **pas pour celle-là**.
+> **Exception : le `letter-spacing` diverge volontairement.** `0.10em` sur le
+> hero, `0.22em` dans le Header — plus du double d'écart. **Ne pas
+> resynchroniser** — ce n'est pas un oubli. Sur la bande crème, l'aplat
+> uniforme laisse l'approche ample se lire comme une intention éditoriale ;
+> sur la photo, le grain et le `text-shadow` remplissent les blancs entre
+> lettres, qui se lisent alors comme de la dispersion — le mot se délite. La
+> règle de duplication ci-dessus vaut donc pour les 4 autres propriétés,
+> **pas pour celle-là**.
 >
-> Conséquence : le masthead du hero est ~`0.7em` plus étroit que celui de la
+> Descendu en deux passes (`0.22` → `0.15` → `0.10`). **Plancher : ~`0.06em`.**
+> En capitales, en dessous, les lettres se collent et l'ensemble redevient
+> illisible sur fond chargé — on remplacerait un défaut par l'autre. On est
+> proche de la limite : ne pas continuer à descendre sans regarder le rendu
+> sur une photo claire ET une photo dense.
+>
+> Conséquence : le masthead du hero est ~`1.2em` plus étroit que celui de la
 > bande crème. Les deux n'ont plus la même largeur au scroll, en plus du
 > décalage horizontal déjà assumé ci-dessous.
 >

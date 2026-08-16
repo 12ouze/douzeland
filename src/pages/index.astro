@@ -125,7 +125,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
      ICI aussi (les styles Astro étant scopés, aucun moyen d'hériter sans
      variable globale).
 
-     LETTER-SPACING : 0.15em ICI, 0.22em dans Header.astro → .titre.
+     LETTER-SPACING : 0.10em ICI, 0.22em dans Header.astro → .titre.
      ⚠️ CE N'EST PAS UN OUBLI DE SYNCHRONISATION — ne pas « corriger » en
      recopiant 0.22em. C'est une compensation optique liée au fond.
      Sur la bande crème du Header, le texte noir se détache sur un aplat
@@ -133,9 +133,14 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
      Ici, le texte blanc est posé sur une photo — grain, contrastes locaux et
      text-shadow viennent remplir les blancs entre les lettres, qui cessent
      d'être perçus comme de l'espace et se lisent comme de la dispersion : le
-     mot se délite au lieu de tenir en bloc. Resserrer d'un tiers lui rend sa
-     cohésion sans le rendre dense.
-     Conséquence assumée : le masthead du hero est désormais ~0.7em plus
+     mot se délite au lieu de tenir en bloc. Resserrer lui rend sa cohésion.
+     La valeur est descendue en deux passes (0.22 → 0.15 → 0.10) : 0.15em
+     corrigeait déjà, mais pas assez pour que le mot tienne en bloc.
+     PLANCHER : ~0.06em. En capitales, en dessous, les lettres se collent et
+     l'ensemble redevient illisible sur un fond chargé — on aurait remplacé un
+     défaut par l'autre. On est proche de la limite, ne pas continuer à
+     descendre sans regarder le rendu sur une photo claire ET une photo dense.
+     Conséquence assumée : le masthead du hero est désormais ~1.2em plus
      ÉTROIT que celui de la bande crème (l'approche s'ajoute après chacun des
      10 caractères). Au scroll, les deux mastheads n'ont donc plus la même
      largeur — ça s'ajoute au décalage horizontal déjà assumé plus bas.
@@ -164,7 +169,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     color: #fff;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.15em; /* ≠ 0.22em du Header : voir « LETTER-SPACING » ci-dessus */
+    letter-spacing: 0.10em; /* ≠ 0.22em du Header : voir « LETTER-SPACING » ci-dessus */
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     line-height: 1;
     opacity: 1;
@@ -193,7 +198,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     color: #fff;
     font-size: 0.85rem;
     /* Ample, et volontairement conservé à 0.22em alors que .signature est
-       redescendu à 0.15em : ces deux valeurs ne sont PAS liées, ne pas les
+       redescendu à 0.10em : ces deux valeurs ne sont PAS liées, ne pas les
        resynchroniser. À 0.85rem, l'approche large sépare les lettres au lieu
        de les disperser — c'est ce qui tient le texte lisible sur photo à cette
        taille. Le problème de dispersion ne se pose qu'en grand corps. */
