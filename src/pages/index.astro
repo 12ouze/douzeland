@@ -118,12 +118,27 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   /* MASTHEAD DE COUVERTURE : « DOUZE LAND » en haut à gauche du hero, sur le
      même axe vertical que le masthead de la bande crème (cf. ALIGNEMENT plus
      bas) — tout le site étant aligné à gauche, un titre centré détonnait.
-     Les 5 propriétés typographiques sont RECOPIÉES à l'identique de
-     Header.astro → .titre (font-weight 800, uppercase, letter-spacing 0.22em,
-     clamp(1.6rem, 4vw, 2.6rem), line-height 1) → largeur rendue identique au
-     masthead de la bande crème. Elles sont dupliquées, pas partagées : si tu
-     changes la typo du Header un jour, il faut la répercuter ICI aussi (les
-     styles Astro étant scopés, aucun moyen d'hériter sans variable globale).
+     4 des 5 propriétés typographiques sont RECOPIÉES à l'identique de
+     Header.astro → .titre (font-weight 800, uppercase,
+     clamp(1.6rem, 4vw, 2.6rem), line-height 1). Elles sont dupliquées, pas
+     partagées : si tu changes la typo du Header un jour, il faut la répercuter
+     ICI aussi (les styles Astro étant scopés, aucun moyen d'hériter sans
+     variable globale).
+
+     LETTER-SPACING : 0.15em ICI, 0.22em dans Header.astro → .titre.
+     ⚠️ CE N'EST PAS UN OUBLI DE SYNCHRONISATION — ne pas « corriger » en
+     recopiant 0.22em. C'est une compensation optique liée au fond.
+     Sur la bande crème du Header, le texte noir se détache sur un aplat
+     uniforme : l'approche ample aère et se lit comme une intention éditoriale.
+     Ici, le texte blanc est posé sur une photo — grain, contrastes locaux et
+     text-shadow viennent remplir les blancs entre les lettres, qui cessent
+     d'être perçus comme de l'espace et se lisent comme de la dispersion : le
+     mot se délite au lieu de tenir en bloc. Resserrer d'un tiers lui rend sa
+     cohésion sans le rendre dense.
+     Conséquence assumée : le masthead du hero est désormais ~0.7em plus
+     ÉTROIT que celui de la bande crème (l'approche s'ajoute après chacun des
+     10 caractères). Au scroll, les deux mastheads n'ont donc plus la même
+     largeur — ça s'ajoute au décalage horizontal déjà assumé plus bas.
      Ombre renforcée (0 2px 12px / 0.6) vs celle du chevron : à cette taille le
      texte couvre beaucoup de surface, donc beaucoup plus de risques de tomber
      sur une zone claire ou chargée.
@@ -149,7 +164,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     color: #fff;
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.22em;
+    letter-spacing: 0.15em; /* ≠ 0.22em du Header : voir « LETTER-SPACING » ci-dessus */
     font-size: clamp(1.6rem, 4vw, 2.6rem);
     line-height: 1;
     opacity: 1;
@@ -177,7 +192,12 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     margin: 0;
     color: #fff;
     font-size: 0.85rem;
-    letter-spacing: 0.22em; /* ample, aligné sur le letter-spacing du masthead */
+    /* Ample, et volontairement conservé à 0.22em alors que .signature est
+       redescendu à 0.15em : ces deux valeurs ne sont PAS liées, ne pas les
+       resynchroniser. À 0.85rem, l'approche large sépare les lettres au lieu
+       de les disperser — c'est ce qui tient le texte lisible sur photo à cette
+       taille. Le problème de dispersion ne se pose qu'en grand corps. */
+    letter-spacing: 0.22em;
     text-transform: lowercase;
     opacity: 0.9; /* 0.75 était trop pâle sur une photo claire */
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); /* même valeur que le chevron */

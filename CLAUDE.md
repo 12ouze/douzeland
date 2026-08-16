@@ -244,10 +244,26 @@ que l'écart entre eux varie. `prefers-reduced-motion` est géré sur les **deux
 éléments animés.
 
 **Masthead « DOUZE LAND » du hero** — coin haut-gauche, marges égales de
-`2.5rem`. Typographie recopiée à l'identique de `Header.astro → .titre` (800,
-uppercase, `0.22em`, `clamp(1.6rem, 4vw, 2.6rem)`, `line-height: 1`) : c'est une
-**duplication, pas un héritage** (styles Astro scopés) — si la typo du Header
-change, la répercuter ici aussi.
+`2.5rem`. Typographie recopiée de `Header.astro → .titre` (800, uppercase,
+`clamp(1.6rem, 4vw, 2.6rem)`, `line-height: 1`) : c'est une **duplication, pas
+un héritage** (styles Astro scopés) — si la typo du Header change, la
+répercuter ici aussi.
+
+> **Exception : le `letter-spacing` diverge volontairement.** `0.15em` sur le
+> hero, `0.22em` dans le Header. **Ne pas resynchroniser** — ce n'est pas un
+> oubli. Sur la bande crème, l'aplat uniforme laisse l'approche ample se lire
+> comme une intention éditoriale ; sur la photo, le grain et le `text-shadow`
+> remplissent les blancs entre lettres, qui se lisent alors comme de la
+> dispersion — le mot se délite. La règle de duplication ci-dessus vaut donc
+> pour les 4 autres propriétés, **pas pour celle-là**.
+>
+> Conséquence : le masthead du hero est ~`0.7em` plus étroit que celui de la
+> bande crème. Les deux n'ont plus la même largeur au scroll, en plus du
+> décalage horizontal déjà assumé ci-dessous.
+>
+> Même logique pour `.compteur` (« N photographies »), resté à `0.22em` : à
+> `0.85rem` l'approche large sépare au lieu de disperser. Les trois valeurs
+> sont indépendantes.
 
 > **Arbitrage assumé** : le masthead est aligné sur **la photo** (pleine
 > largeur) et non sur la grille du site (conteneur `max-width: 1000px` centré).
