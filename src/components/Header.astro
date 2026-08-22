@@ -108,14 +108,17 @@ const estActif = (href) =>
       flex-direction: column;
       align-items: flex-start;
       /* Rythme vertical mobile (mesuré en boîtes DOM à 390px) :
+         - padding-top 4rem = 64px (5rem en desktop) : le header reste ancré
+           en haut de page au lieu de flotter. Sur la home s'y ajoute la
+           bande crème de 2.5rem laissée par le hero (cf. CLAUDE.md) ;
          - gap 0.95rem ≈ 15px entre « memoire vive » et la nav, calé sur
            l'écart titre → tagline (15px) pour que le header se lise comme
            un seul bloc ;
-         - padding-bottom 6.5rem = 104px avant la première photo, nettement
-           plus que les 96px (6rem) entre deux photos de la galerie : un
-           changement de section respire plus qu'une succession d'images. */
+         - padding-bottom 5.5rem = 88px avant la première photo, à peu près
+           le rythme de la galerie (96px entre deux photos). */
       gap: 0.95rem;
-      padding-bottom: 6.5rem;
+      padding-top: 4rem;
+      padding-bottom: 5.5rem;
     }
     .identite,
     .nav {
