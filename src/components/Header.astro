@@ -1,7 +1,7 @@
 ---
 // Masthead du site : layout horizontal desktop (identité à gauche, nav à
-// droite, verticalement centrées). Mobile (≤600px) : passage en vertical
-// (identité puis nav, alignement gauche, pas de burger).
+// droite, alignées sur la ligne de base de « memoire vive »). Mobile (≤600px) :
+// passage en vertical (identité puis nav, alignement gauche, pas de burger).
 // Nav prête à accueillir d'autres liens (contact, about…) : itération sur
 // le tableau `liens` ci-dessous.
 const pathname = Astro.url.pathname;
@@ -88,19 +88,39 @@ const estActif = (href) =>
     font-weight: 700;
   }
 
-  /* Mobile (≤600px) : on reste en flex horizontal (nav à droite alignée
-     avec "memoire vive").
-     - Lien de la page courante masqué pour libérer de la place sur les autres
-       (la classe .actuel n'est posée que sur 0 ou 1 lien selon la page).
-     - Wrap des liens autorisé en filet de sécurité.
+  /* Mobile (≤600px) : la nav passe sur sa propre ligne, sous « memoire vive »,
+     alignée à gauche sur la même marge que le masthead.
+     - Avant : titre et nav en `flex-shrink: 0` sur une seule rangée → à 4
+       liens, la rangée ne tenait plus sous ~390px et la page défilait
+       latéralement (« carnet » coupé au bord). Passer en colonne supprime la
+       compétition pour la largeur.
+     - `min-width: 0` sur identité et nav : un enfant flex refuse par défaut
+       de descendre sous sa largeur de contenu, ce qui est précisément ce qui
+       provoquait le débordement.
+     - Wrap des liens autorisé : un futur onglet passera à la ligne au lieu
+       de recasser le layout.
+     - Lien de la page courante masqué (la classe .actuel n'est posée que sur
+       0 ou 1 lien selon la page).
      - Titre : wrap naturel laissé par défaut (DOUZE sur une ligne, LAND en
        dessous) — taille héritée du desktop. */
   @media (max-width: 600px) {
-    .nav .lien.actuel {
-      display: none;
+    .masthead {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+    }
+    .identite,
+    .nav {
+      min-width: 0;
+      max-width: 100%;
     }
     .nav {
       flex-wrap: wrap;
+      flex-shrink: 1;
+      row-gap: 0.6rem;
+    }
+    .nav .lien.actuel {
+      display: none;
     }
   }
 </style>

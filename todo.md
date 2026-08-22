@@ -43,9 +43,11 @@
       **Bloquant avant tout travail SEO sérieux.**
 - [ ] **Chargement différé sur `/archives`** — la page sert 102 photos d'un
       coup. Devenu prioritaire à cette échelle, surtout sur mobile.
-- [ ] **Débordement horizontal en mobile (~24px)** repéré sur le `.masthead` :
-      titre et nav en `flex-shrink: 0` qui ne tiennent pas sous 342px de large.
-      À confirmer, puis corriger.
+- [x] **Débordement horizontal en mobile** sur le `.masthead` — corrigé le
+      22 août 2026 : sous 600px la nav passe sur sa propre ligne sous
+      « memoire vive » (colonne, alignée à gauche, `flex-wrap`, `min-width: 0`).
+      Vérifié à 390/360/320px : plus de scroll latéral, 4 liens visibles et
+      cliquables. Desktop inchangé.
 - [ ] **3 images orphelines** (`NZF_1117.jpg`, `NZF_1171.jpg`,
       `NZF_2842-Modifier.jpg`) — aucun impact sur le site, ~3 Mo de poids mort.
       À nettoyer un jour, **sur décision explicite** (cf. CLAUDE.md → règle des
