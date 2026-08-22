@@ -107,7 +107,15 @@ const estActif = (href) =>
     .masthead {
       flex-direction: column;
       align-items: flex-start;
-      gap: 1.5rem;
+      /* Rythme vertical mobile (mesuré en boîtes DOM à 390px) :
+         - gap 0.95rem ≈ 15px entre « memoire vive » et la nav, calé sur
+           l'écart titre → tagline (15px) pour que le header se lise comme
+           un seul bloc ;
+         - padding-bottom 6.5rem = 104px avant la première photo, nettement
+           plus que les 96px (6rem) entre deux photos de la galerie : un
+           changement de section respire plus qu'une succession d'images. */
+      gap: 0.95rem;
+      padding-bottom: 6.5rem;
     }
     .identite,
     .nav {
