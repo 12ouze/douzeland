@@ -14,7 +14,10 @@ const liens = [
   { libelle: 'home', href: '/' },
   { libelle: 'archives', href: '/archives' },
   { libelle: 'contact', href: '/contact' },
-  { libelle: 'carnet', href: 'https://carnet.douzeland.com' },
+  // externe: ouvre dans un nouvel onglet + annonce aux lecteurs d'écran —
+  // le visiteur ne doit pas quitter le portfolio sans le savoir. Pas
+  // d'icône visible (minimalisme).
+  { libelle: 'carnet', href: 'https://carnet.douzeland.com', externe: true },
   // À venir : { libelle: 'about', href: '/about' }
 ];
 
@@ -35,7 +38,14 @@ const estActif = (href) =>
     {liens
       .filter((l) => !(l.href === '/' && estActif('/')))
       .map((l) => (
-        <a href={l.href} class:list={['lien', { actuel: estActif(l.href) }]}>{l.libelle}</a>
+        <a
+          href={l.href}
+          class:list={['lien', { actuel: estActif(l.href) }]}
+          target={l.externe ? '_blank' : undefined}
+          rel={l.externe ? 'noopener noreferrer' : undefined}
+          aria-label={l.externe ? `${l.libelle} — site externe, s'ouvre dans un nouvel onglet` : undefined}
+          title={l.externe ? 'site externe — s’ouvre dans un nouvel onglet' : undefined}
+        >{l.libelle}</a>
       ))}
     <!-- futurs liens : about -->
   </nav>
@@ -78,7 +88,10 @@ const estActif = (href) =>
   .tagline {
     margin: 0.8rem 0 0;
     color: var(--noir);
-    opacity: 0.55;
+    /* 0.6 et pas moins : à 0.55 le contraste sur crème tombait à 4.05:1,
+       sous le seuil d'accessibilité de 4.5:1. À 0.6 → 4.81:1, et c'est la
+       même opacité que les liens de nav : un seul gris dans le header. */
+    opacity: 0.6;
     font-size: 0.95rem;
     letter-spacing: 0.08em;
   }

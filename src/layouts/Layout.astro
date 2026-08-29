@@ -2,12 +2,13 @@
 // Coquille HTML commune aux pages : <head> + import du CSS global.
 // Le header/footer ne sont PAS ici : toutes les pages n'en veulent pas
 // (ex. la page photo plein écran) → on les compose page par page.
-// Popup : inclus globalement, ne s'affiche que si flag sessionStorage posé.
+// Le Popup de confirmation n'est PLUS ici : il ne vit que sur /contact,
+// la seule page où il a un sens (le markup mort faussait la structure
+// sémantique des autres pages — son h2 « merci » était leur seul titre).
 // ⚠️ La page photo (/photo/[slug]) porte son propre <head> : toute
 // modification des métadonnées communes doit être répercutée là-bas aussi
 // (cf. CLAUDE.md → Dette technique → métadonnées dupliquées).
 import '../styles/global.css';
-import Popup from '../components/Popup.astro';
 import Footer from '../components/Footer.astro';
 import { getCollection } from 'astro:content';
 import { getImage } from 'astro:assets';
@@ -83,7 +84,6 @@ const urlCanonique = new URL(chemin, Astro.site);
   </head>
   <body>
     <slot />
-    <Popup />
     <Footer />
   </body>
 </html>

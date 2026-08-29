@@ -1,10 +1,15 @@
 ---
 // Page /contact : formulaire envoyé en AJAX à Web3Forms (service tiers
 // compatible Astro statique, 250 submits/mois gratuit). Sur succès → flag
-// `contact_sent` dans sessionStorage, puis redirection vers /, où le Popup
-// (inclus via Layout sur toutes les pages) s'auto-ouvre.
+// `contact_sent` dans sessionStorage puis RECHARGEMENT de /contact, où le
+// Popup (inclus ci-dessous, uniquement sur cette page) s'auto-ouvre.
+// (Avant : redirection vers /, mais le Popup vivait alors dans Layout et
+// traînait en markup mort sur toutes les pages.)
+// Repli sans JavaScript : action + method sur le <form> → l'envoi part
+// quand même chez Web3Forms, qui affiche sa propre page de confirmation.
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
+import Popup from '../components/Popup.astro';
 ---
 
 <Layout
@@ -16,31 +21,39 @@ import Header from '../components/Header.astro';
     {/* H1 de la page, masqué visuellement : la mise en page du formulaire ne
         prévoit pas de titre visible, mais chaque page doit avoir son H1. */}
     <h1 class="visuellement-cache">contact</h1>
-    <form id="form-contact" class="form">
+    <form
+      id="form-contact"
+      class="form"
+      action="https://api.web3forms.com/submit"
+      method="post"
+    >
       <!-- Champs cachés requis par Web3Forms -->
       <input type="hidden" name="access_key" value="5caf0eb8-f520-43b4-960d-b32add66c7bb" />
       <input type="hidden" name="from_name" value="douzeland - contact" />
       <!-- Honeypot anti-bot : doit rester vide -->
       <input type="checkbox" name="botcheck" style="display: none" tabindex="-1" autocomplete="off" />
 
-      <label class="champ">
+      {/* Chaque label est associé EXPLICITEMENT à son champ (for + id), en
+          plus de l'association implicite par imbrication : plus robuste pour
+          les lecteurs d'écran et la commande vocale. Apparence inchangée. */}
+      <label class="champ" for="champ-nom">
         <span class="label">nom</span>
-        <input type="text" name="name" required />
+        <input id="champ-nom" type="text" name="name" required />
       </label>
 
-      <label class="champ">
+      <label class="champ" for="champ-email">
         <span class="label">email</span>
-        <input type="email" name="email" required />
+        <input id="champ-email" type="email" name="email" required />
       </label>
 
-      <label class="champ">
+      <label class="champ" for="champ-telephone">
         <span class="label">téléphone (optionnel)</span>
-        <input type="tel" name="phone" />
+        <input id="champ-telephone" type="tel" name="phone" />
       </label>
 
-      <label class="champ">
+      <label class="champ" for="champ-sujet">
         <span class="label">type de demande</span>
-        <select name="subject" required>
+        <select id="champ-sujet" name="subject" required>
           <option value="">—</option>
           <option value="tirage">tirage</option>
           <option value="exposition">exposition</option>
@@ -49,15 +62,16 @@ import Header from '../components/Header.astro';
         </select>
       </label>
 
-      <label class="champ">
+      <label class="champ" for="champ-message">
         <span class="label">message</span>
-        <textarea name="message" required rows="5"></textarea>
+        <textarea id="champ-message" name="message" required rows="5"></textarea>
       </label>
 
       <button type="submit" class="envoyer">envoyer</button>
       <p id="erreur" class="erreur" hidden></p>
     </form>
   </main>
+  <Popup />
 </Layout>
 
 <script>
@@ -84,8 +98,10 @@ import Header from '../components/Header.astro';
           body: JSON.stringify(data),
         });
         if (res.status === 200) {
+          // Recharge /contact : le flag fait s'auto-ouvrir le Popup (présent
+          // sur cette page uniquement) et le formulaire revient vierge.
           sessionStorage.setItem('contact_sent', 'ok');
-          window.location.href = '/';
+          window.location.reload();
           return;
         }
         throw new Error('status ' + res.status);

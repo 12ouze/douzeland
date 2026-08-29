@@ -32,6 +32,16 @@ img {
   max-width: 100%;
 }
 
+/* Navigation clavier : contour visible sur TOUT élément interactif (liens,
+   boutons, champs). :focus-visible et non :focus → le contour n'apparaît
+   qu'à la navigation clavier, jamais au clic souris. Contour noir fin,
+   légèrement décalé — dans la charte, zéro ornement. Les champs du
+   formulaire de contact gardent leur propre :focus (plus spécifique). */
+:focus-visible {
+  outline: 2px solid var(--noir);
+  outline-offset: 3px;
+}
+
 /* Masquage visuel accessible : l'élément disparaît de l'écran mais reste
    annoncé par les lecteurs d'écran (jamais display:none pour cet usage,
    qui le retirerait aussi de l'arbre d'accessibilité). Sert aux H1 des

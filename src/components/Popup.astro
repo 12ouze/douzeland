@@ -1,7 +1,7 @@
 ---
 // Popup de confirmation auto-déclenché si sessionStorage.contact_sent === 'ok'.
-// Inclus dans Layout.astro → présent sur toutes les pages, mais ne s'affiche
-// QUE après un submit réussi du formulaire /contact (le flag est posé là).
+// Inclus UNIQUEMENT sur /contact (la seule page où il a un sens) : le flag
+// est posé par le submit AJAX réussi, qui recharge /contact → auto-ouverture.
 // Fermeture : bouton, clic sur l'overlay, ou touche Escape. Show/hide pur,
 // pas d'animation CSS (cf. consigne).
 ---
