@@ -228,14 +228,18 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
       display: none;
     }
     /* Rythme d'entrée mobile resserré (variables lues par Header.astro) :
-       3.5rem au-dessus du masthead (au lieu de 5rem) et 4rem entre la nav et
-       la 1re photo (au lieu de 6.5rem) → la première photo (portrait ~491px)
-       tient entière dans les ~660px utiles d'un iPhone. Mêmes valeurs posées
-       sur /archives ; /contact garde les fallbacks du Header. Cette feuille
-       n'étant chargée que sur la home, le :root ne fuit pas ailleurs. */
+       3.5rem au-dessus du masthead (au lieu de 5rem), et 1.5rem entre la nav
+       et la 1re photo — la MÊME valeur que le gap tagline → nav du Header :
+       les trois écarts internes du header (titre → tagline, visuellement
+       ~24px ; tagline → nav, 24px ; nav → photo, 24px) forment une cadence
+       régulière, la nav ne « flotte » plus entre deux zones. Bonus : la
+       première photo (portrait ~491px) remonte à ~679px de bas dans les
+       ~660px utiles d'un iPhone. Mêmes valeurs posées sur /archives ;
+       /contact garde les fallbacks du Header. Cette feuille n'étant chargée
+       que sur la home, le :root ne fuit pas ailleurs. */
     :global(:root) {
       --masthead-haut-mobile: 3.5rem;
-      --masthead-bas-mobile: 4rem;
+      --masthead-bas-mobile: 1.5rem;
     }
   }
 

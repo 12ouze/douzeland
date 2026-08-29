@@ -62,8 +62,8 @@ const photos = (await getCollection('photos')).sort(parOrdreDesc);
       grid-template-columns: repeat(3, 1fr);
       gap: 0.3rem;
       /* L'écart nav → grille est porté entièrement par le padding-bottom du
-         Header (4rem via la variable ci-dessous) : le padding-top de 2rem de
-         la grille est annulé pour retomber pile à 64px, le même rythme
+         Header (1.5rem via la variable ci-dessous) : le padding-top de 2rem
+         de la grille est annulé pour retomber pile à 24px, le même rythme
          d'entrée que la home (avant : 6.5rem + 2rem = 136px). */
       padding-top: 0;
     }
@@ -71,7 +71,7 @@ const photos = (await getCollection('photos')).sort(parOrdreDesc);
        commun aux deux pages. Feuille chargée uniquement sur /archives. */
     :global(:root) {
       --masthead-haut-mobile: 3.5rem;
-      --masthead-bas-mobile: 4rem;
+      --masthead-bas-mobile: 1.5rem;
     }
   }
 

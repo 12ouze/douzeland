@@ -111,15 +111,19 @@ const estActif = (href) =>
          - les deux paddings sont PARAMÉTRABLES par page via variables CSS,
            avec en fallback les valeurs historiques (5rem au-dessus du
            masthead, 6.5rem avant le contenu). La home et /archives les
-           resserrent (3.5rem / 4rem) pour que la première photo ne soit pas
-           coupée à l'arrivée sur un iPhone ; /contact ne pose rien → il
+           resserrent (3.5rem / 1.5rem) pour que la première photo ne soit
+           pas coupée à l'arrivée sur un iPhone ; /contact ne pose rien → il
            garde les fallbacks, strictement inchangé ;
          - gap 1.5rem = 24px entre « memoire vive » et la nav : en dessous
            (testé à 15px) la nav se colle à la baseline de la tagline ;
-         - à 4rem, l'écart d'entrée (64px) passe SOUS les 96px (6rem) entre
-           deux photos de la galerie : arbitrage assumé (août 2026) — montrer
-           la première photo entière sur un écran d'iPhone (~660px utiles)
-           prime sur la hiérarchie « entrée de section > inter-photos ». */
+         - le 1.5rem de padding-bottom posé par home/archives = le gap
+           ci-dessus : les trois écarts internes du header (titre → tagline
+           ~24px visuels, tagline → nav 24px, nav → contenu 24px) forment une
+           cadence régulière (août 2026). L'écart d'entrée passe loin SOUS
+           les 96px (6rem) entre deux photos de la galerie : arbitrage
+           assumé — le rythme régulier du bloc header + montrer la première
+           photo entière (~660px utiles sur iPhone) priment sur la
+           hiérarchie « entrée de section > inter-photos ». */
       gap: 1.5rem;
       padding-top: var(--masthead-haut-mobile, 5rem);
       padding-bottom: var(--masthead-bas-mobile, 6.5rem);
