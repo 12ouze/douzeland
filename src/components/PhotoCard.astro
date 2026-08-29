@@ -6,9 +6,12 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   photo: CollectionEntry<'photos'>;
+  /* true UNIQUEMENT pour la première photo de la page : chargement immédiat
+     et prioritaire (LCP), au lieu du lazy qui retarde le premier écran. */
+  priorite?: boolean;
 }
 
-const { photo } = Astro.props;
+const { photo, priorite = false } = Astro.props;
 const { image, alt } = photo.data;
 ---
 
@@ -19,7 +22,8 @@ const { image, alt } = photo.data;
     widths={[640, 960, 1280, 1600, 2000]}
     sizes="(max-width: 1040px) 100vw, 1000px"
     format="webp"
-    loading="lazy"
+    loading={priorite ? 'eager' : 'lazy'}
+    fetchpriority={priorite ? 'high' : undefined}
   />
 </a>
 

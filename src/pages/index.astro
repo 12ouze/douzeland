@@ -42,7 +42,10 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
   )}
   <Header />
   <main class="galerie">
-    {listPhotos.map((photo) => <PhotoCard photo={photo} />)}
+    {/* priorite sur la 1re photo seulement : c'est la première image visible
+        (le slider est masqué ≤600px) → eager + fetchpriority=high pour ne pas
+        retarder le premier écran. Les suivantes restent en lazy. */}
+    {listPhotos.map((photo, i) => <PhotoCard photo={photo} priorite={i === 0} />)}
   </main>
 </Layout>
 

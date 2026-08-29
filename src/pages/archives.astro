@@ -22,11 +22,17 @@ const photos = (await getCollection('photos')).sort(parOrdreDesc);
     <main class="archives">
       {photos.map((photo) => (
         <a class="vignette" href={`/photo/${photo.id}`}>
+          {/* `sizes` DOIT refléter la grille CSS ci-dessous (colonnes par
+              palier) : ≤600px → 3 colonnes ≈ 30vw ; ≤900px → 2 colonnes
+              ≈ 50vw ; desktop → 4 colonnes dans le conteneur 1000px ≈ 226px,
+              déclaré 250px (léger arrondi haut, sans conséquence). Une valeur
+              trop large (ex. 100vw) ferait télécharger des fichiers énormes
+              pour des vignettes minuscules. */}
           <Image
             src={photo.data.image}
             alt={photo.data.alt}
-            widths={[400, 640, 960]}
-            sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 250px"
+            widths={[240, 400, 640, 960]}
+            sizes="(max-width: 600px) 30vw, (max-width: 900px) 50vw, 250px"
             format="webp"
             loading="lazy"
           />
