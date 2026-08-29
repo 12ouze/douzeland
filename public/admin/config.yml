@@ -1,17 +1,23 @@
 # Configuration Decap CMS — interface d'admin de douzeland.
 # Auth : GitHub OAuth auto-hébergé (Cloudflare Pages Functions : /api/auth + /api/callback).
-# local_backend permet d'éditer en LOCAL sans OAuth via `npx decap-server`.
-
-local_backend: true
+# Pour éditer en LOCAL sans OAuth : ajouter temporairement `local_backend: true`
+# ici + lancer `npx decap-server` — et NE PAS commiter ce réglage (c'est un
+# mode de développement, il n'a rien à faire en production).
 
 backend:
   name: github
   repo: 12ouze/douzeland
   branch: main
+  # ⚠️ base_url reste sur pages.dev VOLONTAIREMENT : c'est l'hôte dont
+  # l'origine sert de redirect_uri OAuth, et le callback déclaré dans l'app
+  # GitHub est https://douzeland.pages.dev/api/callback. Le passer à
+  # douzeland.com sans changer le callback chez GitHub casserait la
+  # connexion à l'admin (cf. CLAUDE.md → Callback OAuth lié au domaine).
   base_url: https://douzeland.pages.dev        # hôte des fonctions OAuth (Cloudflare Pages)
   auth_endpoint: api/auth                       # Pages Function → /api/auth
 
-site_url: https://douzeland.pages.dev
+# Cosmétique (lien « voir le site » dans l'admin) : sans lien avec l'OAuth.
+site_url: https://douzeland.com
 locale: fr
 
 # Images commitées dans src/assets/photos (optimisées par Astro au build) ;

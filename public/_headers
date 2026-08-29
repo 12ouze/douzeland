@@ -1,0 +1,28 @@
+# En-têtes de sécurité — format Cloudflare Pages (appliqués au déploiement).
+# Doc : https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  # Interdit d'embarquer le site dans une iframe d'un autre domaine
+  # (clickjacking). SAMEORIGIN plutôt que DENY : ne bloque rien en interne.
+  X-Frame-Options: SAMEORIGIN
+  # Le navigateur respecte le Content-Type annoncé, sans le « deviner ».
+  X-Content-Type-Options: nosniff
+  # Referer complet en interne, origine seule vers l'extérieur, rien en HTTP.
+  Referrer-Policy: strict-origin-when-cross-origin
+  # Capteurs sensibles désactivés : le site n'en a aucun usage.
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+
+# ── Content-Security-Policy : VOLONTAIREMENT ABSENTE pour l'instant ──────
+# Le site contient six scripts inline (slider, formulaire, popup…) qu'une
+# CSP avec script-src restrictif bloquerait net — pages cassées.
+# Proposition prête, à activer SEULEMENT après décision (et test sur un
+# déploiement de préversion), en la décommentant ci-dessus sous /* :
+#
+#   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://avatars.githubusercontent.com; connect-src 'self' https://api.web3forms.com https://api.github.com; frame-ancestors 'self'
+#
+# Notes : 'unsafe-inline' est le compromis qui garde les scripts inline
+# vivants (une vraie CSP stricte demanderait de les externaliser ou de les
+# hasher un par un) ; unpkg.com sert Decap dans /admin ; web3forms est la
+# cible du formulaire de contact. Marche à suivre : décommenter, déployer
+# une préversion, tester la home (slider), /contact (envoi) et /admin
+# (connexion), puis seulement fusionner.
