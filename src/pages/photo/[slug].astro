@@ -5,7 +5,7 @@
 // centrée, bandes crème automatiques selon le ratio. Aucune métadonnée
 // visible, un seul élément d'interface (lien « retour »).
 import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import '../../styles/global.css';
 
 // Une page par entrée de la collection. L'id de l'entrée (nom du .md sans
@@ -20,6 +20,19 @@ export async function getStaticPaths() {
 
 const { photo } = Astro.props;
 const { image, alt, title } = photo.data;
+
+// Métadonnées de partage/SEO — ⚠️ ce <head> est INDÉPENDANT de Layout.astro
+// (dette documentée dans CLAUDE.md) : toute évolution des métadonnées
+// communes doit être faite ICI ET dans Layout.astro.
+// Description construite depuis le titre et l'alt de la photo.
+const description = title
+  ? `${title} — ${alt}. Une photographie du carnet douze land.`
+  : `${alt}. Une photographie du carnet douze land.`;
+const titrePage = `${title ?? 'douze land'} — douze land`;
+// og:image = LA photo de la page, en ~1200px, jpeg (iMessage et certains
+// crawlers de messageries ne décodent pas le webp dans les aperçus).
+const imageOg = await getImage({ src: image, width: 1200, format: 'jpeg' });
+const urlCanonique = new URL(`/photo/${photo.id}/`, Astro.site);
 ---
 
 <html lang="fr">
@@ -30,9 +43,24 @@ const { image, alt, title } = photo.data;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    <title>{title ?? 'douze land'} — douze land</title>
+    <title>{titrePage}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={urlCanonique} />
+    <meta property="og:title" content={titrePage} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content={urlCanonique} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="douze land" />
+    <meta property="og:image" content={new URL(imageOg.src, Astro.site)} />
+    <meta property="og:image:width" content={String(imageOg.attributes.width)} />
+    <meta property="og:image:height" content={String(imageOg.attributes.height)} />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
+    {/* H1 masqué visuellement : la page est la photo plein écran, aucun
+        texte visible n'est prévu, mais chaque page doit avoir son H1. */}
+    <h1 class="visuellement-cache">{title ?? alt}</h1>
     <a class="retour" href="/">← retour</a>
     <Image
       class="photo"

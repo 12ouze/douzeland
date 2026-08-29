@@ -12,8 +12,11 @@ const parOrdreDesc = (a, b) =>
 const photos = (await getCollection('photos')).sort(parOrdreDesc);
 ---
 
-<Layout title="archives — douze land">
-  <Header />
+<Layout
+  title="archives — douze land"
+  description="Toutes les photographies du carnet douze land, réunies en une grille dense : l'archive complète, de la plus récente à la plus ancienne."
+>
+  <Header titreEnH1 />
   {photos.length === 0 ? (
     <main class="archives vide">
       <p>aucune archive pour le moment</p>

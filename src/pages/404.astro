@@ -1,0 +1,63 @@
+---
+// Page 404 : servie par Cloudflare Pages avec un VRAI statut 404 (Pages
+// utilise automatiquement dist/404.html pour toute URL inconnue). Avant sa
+// création, une URL inexistante renvoyait la home en 200 (soft 404) —
+// Google pouvait indexer n'importe quelle URL comme page valide.
+// Sobre, dans la charte : header habituel, message court, retour à la home.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+---
+
+<Layout
+  title="page introuvable — douze land"
+  description="Cette page n'existe pas ou plus — retour au carnet photographique douze land."
+  noindex
+>
+  <Header />
+  <main class="introuvable">
+    <h1 class="titre">page introuvable</h1>
+    <p class="texte">
+      cette adresse ne mène à rien — la photo a peut-être changé de place.
+    </p>
+    <a class="retour" href="/">← retour à la galerie</a>
+  </main>
+</Layout>
+
+<style>
+  /* Même colonne que le reste du site, beaucoup d'air, zéro ornement. */
+  .introuvable {
+    max-width: var(--max-contenu);
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  /* Titre dans l'esprit du masthead (gras, capitales, approche ample),
+     un cran en dessous en taille : c'est une page utilitaire. */
+  .titre {
+    margin: 0 0 1rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .texte {
+    margin: 0 0 2rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    opacity: 0.7;
+  }
+
+  /* Lien retour : même traitement que les liens de nav. */
+  .retour {
+    color: var(--noir);
+    text-decoration: none;
+    font-size: 0.85rem;
+    text-transform: lowercase;
+    letter-spacing: 0.12em;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+  }
+  .retour:hover { opacity: 1; }
+</style>

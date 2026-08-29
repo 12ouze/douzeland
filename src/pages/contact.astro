@@ -7,9 +7,15 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 ---
 
-<Layout title="contact — douze land">
+<Layout
+  title="contact — douze land"
+  description="Écrire à Douze — tirage, exposition, collaboration : le formulaire de contact du carnet photographique douze land."
+>
   <Header />
   <main class="contact">
+    {/* H1 de la page, masqué visuellement : la mise en page du formulaire ne
+        prévoit pas de titre visible, mais chaque page doit avoir son H1. */}
+    <h1 class="visuellement-cache">contact</h1>
     <form id="form-contact" class="form">
       <!-- Champs cachés requis par Web3Forms -->
       <input type="hidden" name="access_key" value="5caf0eb8-f520-43b4-960d-b32add66c7bb" />

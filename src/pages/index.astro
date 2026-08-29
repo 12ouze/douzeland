@@ -19,7 +19,10 @@ const sliderPhotos = toutes.filter((p) => p.data.in_slider).sort(parOrdreDesc);
 const listPhotos = [...toutes].sort(parOrdreDesc);
 ---
 
-<Layout title="douze land — photographies">
+<Layout
+  title="douze land — photographies"
+  description="douze land, le carnet photographique de Douze — memoire vive. Ses photographies publiées au fil de l'eau, plein cadre, dans un esprit magazine."
+>
   <IntroGlitch />
   {sliderPhotos.length > 0 && (
     <div class="slider-overlay-wrapper">
@@ -40,7 +43,7 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
       </p>
     </div>
   )}
-  <Header />
+  <Header titreEnH1 />
   <main class="galerie">
     {/* priorite sur la 1re photo seulement : c'est la première image visible
         (le slider est masqué ≤600px) → eager + fetchpriority=high pour ne pas

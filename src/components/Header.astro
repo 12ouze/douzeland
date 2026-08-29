@@ -4,6 +4,11 @@
 // passage en vertical (identité puis nav, alignement gauche, pas de burger).
 // Nav prête à accueillir d'autres liens (contact, about…) : itération sur
 // le tableau `liens` ci-dessous.
+// titreEnH1 : posé par la home et /archives, où « DOUZE LAND » est le H1 de
+// la page (un seul H1 par page). Les autres pages (contact, 404) gardent le
+// lien nu et portent leur propre H1.
+const { titreEnH1 = false } = Astro.props;
+
 const pathname = Astro.url.pathname;
 const liens = [
   { libelle: 'home', href: '/' },
@@ -19,7 +24,11 @@ const estActif = (href) =>
 
 <header class="masthead">
   <div class="identite">
-    <a class="titre" href="/">DOUZE LAND</a>
+    {titreEnH1 ? (
+      <h1 class="titre-h1"><a class="titre" href="/">DOUZE LAND</a></h1>
+    ) : (
+      <a class="titre" href="/">DOUZE LAND</a>
+    )}
     <p class="tagline">memoire vive</p>
   </div>
   <nav class="nav">
@@ -43,6 +52,15 @@ const estActif = (href) =>
     justify-content: space-between;
     align-items: flex-end;
     gap: 2rem;
+  }
+
+  /* Enveloppe H1 du titre (home et /archives) : neutralisée pour que le
+     rendu soit IDENTIQUE au lien nu — toute la typo vit sur .titre. */
+  .titre-h1 {
+    margin: 0;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: 1;
   }
 
   /* Titre : sans-serif gras, capitales, letter-spacing ample (CLAUDE.md). */

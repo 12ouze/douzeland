@@ -3,16 +3,47 @@
 // Le header/footer ne sont PAS ici : toutes les pages n'en veulent pas
 // (ex. la page photo plein écran) → on les compose page par page.
 // Popup : inclus globalement, ne s'affiche que si flag sessionStorage posé.
+// ⚠️ La page photo (/photo/[slug]) porte son propre <head> : toute
+// modification des métadonnées communes doit être répercutée là-bas aussi
+// (cf. CLAUDE.md → Dette technique → métadonnées dupliquées).
 import '../styles/global.css';
 import Popup from '../components/Popup.astro';
 import Footer from '../components/Footer.astro';
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
 
 interface Props {
   title: string;
-  description?: string;
+  description: string;
+  /* true sur la page 404 : noindex, pas de canonical (l'URL demandée est
+     inconnue au build, une canonique vers /404/ serait fausse). */
+  noindex?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, noindex = false } = Astro.props;
+
+// IMAGE DE COUVERTURE (og:image) des pages passant par ce layout : la photo
+// affichée EN PREMIER dans l'ordre du site (order décroissant, le même tri
+// que la home et /archives) — pas de constante à maintenir, la vignette de
+// partage suit automatiquement le haut de la galerie.
+// Pour FIGER une couverture précise un jour : remplacer la ligne du tri par
+//   const couverture = photos.find((p) => p.id === 'mon-slug');
+// Format jpeg (pas webp) : iMessage et certains crawlers de messageries ne
+// décodent pas le webp dans les aperçus de lien.
+const photos = await getCollection('photos');
+const couverture = [...photos].sort(
+  (a, b) => b.data.order - a.data.order || (a.id < b.id ? -1 : 1)
+)[0];
+const imageOg = couverture
+  ? await getImage({ src: couverture.data.image, width: 1200, format: 'jpeg' })
+  : null;
+
+// URL canonique absolue : site (astro.config.mjs) + chemin AVEC slash final,
+// la forme que sert réellement Cloudflare Pages (/archives → 301 /archives/).
+const chemin = Astro.url.pathname.endsWith('/')
+  ? Astro.url.pathname
+  : Astro.url.pathname + '/';
+const urlCanonique = new URL(chemin, Astro.site);
 ---
 
 <!doctype html>
@@ -24,8 +55,31 @@ const { title, description } = Astro.props;
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
-    {description && <meta name="description" content={description} />}
     <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex ? (
+      <meta name="robots" content="noindex" />
+    ) : (
+      <link rel="canonical" href={urlCanonique} />
+    )}
+    {/* Open Graph + Twitter Card : aperçus riches (vignette + description)
+        au partage d'une URL sur WhatsApp, iMessage, LinkedIn, etc. */}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={urlCanonique} />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="douze land" />
+    {imageOg && (
+      <meta property="og:image" content={new URL(imageOg.src, Astro.site)} />
+    )}
+    {imageOg && (
+      <meta property="og:image:width" content={String(imageOg.attributes.width)} />
+    )}
+    {imageOg && (
+      <meta property="og:image:height" content={String(imageOg.attributes.height)} />
+    )}
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <slot />

@@ -31,3 +31,18 @@ img {
   display: block;
   max-width: 100%;
 }
+
+/* Masquage visuel accessible : l'élément disparaît de l'écran mais reste
+   annoncé par les lecteurs d'écran (jamais display:none pour cet usage,
+   qui le retirerait aussi de l'arbre d'accessibilité). Sert aux H1 des
+   pages sans titre visible (contact, pages photo). */
+.visuellement-cache {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
