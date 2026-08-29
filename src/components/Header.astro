@@ -108,16 +108,21 @@ const estActif = (href) =>
       flex-direction: column;
       align-items: flex-start;
       /* Rythme vertical mobile (mesuré en boîtes DOM à 390px) :
-         - padding-top : 5rem hérité du desktop (80px), le header reste
-           ancré. Sur la home s'y ajoute la bande crème de 2.5rem laissée
-           par le hero (cf. CLAUDE.md) ;
+         - les deux paddings sont PARAMÉTRABLES par page via variables CSS,
+           avec en fallback les valeurs historiques (5rem au-dessus du
+           masthead, 6.5rem avant le contenu). La home et /archives les
+           resserrent (3.5rem / 4rem) pour que la première photo ne soit pas
+           coupée à l'arrivée sur un iPhone ; /contact ne pose rien → il
+           garde les fallbacks, strictement inchangé ;
          - gap 1.5rem = 24px entre « memoire vive » et la nav : en dessous
            (testé à 15px) la nav se colle à la baseline de la tagline ;
-         - padding-bottom 6.5rem = 104px avant la première photo, nettement
-           plus que les 96px (6rem) entre deux photos de la galerie : un
-           changement de section respire plus qu'une succession d'images. */
+         - à 4rem, l'écart d'entrée (64px) passe SOUS les 96px (6rem) entre
+           deux photos de la galerie : arbitrage assumé (août 2026) — montrer
+           la première photo entière sur un écran d'iPhone (~660px utiles)
+           prime sur la hiérarchie « entrée de section > inter-photos ». */
       gap: 1.5rem;
-      padding-bottom: 6.5rem;
+      padding-top: var(--masthead-haut-mobile, 5rem);
+      padding-bottom: var(--masthead-bas-mobile, 6.5rem);
     }
     .identite,
     .nav {

@@ -227,6 +227,16 @@ const listPhotos = [...toutes].sort(parOrdreDesc);
     .signature {
       display: none;
     }
+    /* Rythme d'entrée mobile resserré (variables lues par Header.astro) :
+       3.5rem au-dessus du masthead (au lieu de 5rem) et 4rem entre la nav et
+       la 1re photo (au lieu de 6.5rem) → la première photo (portrait ~491px)
+       tient entière dans les ~660px utiles d'un iPhone. Mêmes valeurs posées
+       sur /archives ; /contact garde les fallbacks du Header. Cette feuille
+       n'étant chargée que sur la home, le :root ne fuit pas ailleurs. */
+    :global(:root) {
+      --masthead-haut-mobile: 3.5rem;
+      --masthead-bas-mobile: 4rem;
+    }
   }
 
   /* Masque l'overlay masthead INTERNE du Slider (.masthead-overlay vit
