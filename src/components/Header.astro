@@ -164,6 +164,24 @@ const estActif = (href) =>
       min-width: 0;
       max-width: 100%;
     }
+    /* BLANCS VISUELS ÉGAUX (d'encre à encre), pas seulement marges égales :
+       avec la line-height 1.5 héritée du body, chaque bloc de texte ajoute
+       un demi-interligne invisible au-dessus ET en dessous des lettres
+       (tagline : (1.5 − 1) × 15.2px / 2 = 3.8px ; nav : 3.4px). À marges
+       CSS identiques (24px), le blanc tagline → nav paraissait ~31px là où
+       nav → photo en faisait ~27 (la photo, elle, n'a pas d'interligne).
+       line-height: 1 colle la boîte aux lettres → marge égale redevient
+       blanc égal : 24px partout. Mobile uniquement, le desktop garde 1.5. */
+    .tagline {
+      line-height: 1;
+      /* Compense le demi-interligne supprimé AU-DESSUS de la tagline, pour
+         ne pas resserrer le blanc titre → tagline (~24px, la cadence à
+         trois) : 0.8rem de marge desktop + le demi-interligne perdu. */
+      margin-top: calc(0.8rem + (1.5 - 1) * 0.95rem / 2);
+    }
+    .nav .lien {
+      line-height: 1;
+    }
     .nav {
       flex-wrap: wrap;
       flex-shrink: 1;
